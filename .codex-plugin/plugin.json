@@ -1,7 +1,7 @@
 {
   "name": "open-creator",
   "version": "0.2.0",
-  "description": "Reusable Codex and AI Agent skills distilled from real creator, growth, business, and agent workflows.",
+  "description": "Open-source AI skills for content ideation, writing, visual creation, video production, publishing, and creator workflows.",
   "author": {
     "name": "DLe-kb",
     "url": "https://github.com/DLe-kb"
@@ -19,8 +19,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Open Creator",
-    "shortDescription": "来自真实内容、增长与 Agent 实践的开放 Skill 集合。",
-    "longDescription": "沉淀和发布从真实内容、增长、业务与 AI Agent 落地实践中提炼出的可复用 Codex Skills。",
+    "shortDescription": "面向内容创作者的开源 AI Skills 工具库。",
+    "longDescription": "提供覆盖选题、研究、写作、图文、视频、发布与内容工作流的可安装 Codex Skills。",
     "developerName": "DLe-kb",
     "category": "Productivity",
     "capabilities": [],

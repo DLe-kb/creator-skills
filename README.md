@@ -1,6 +1,8 @@
 # Open Creator
 
-Open Creator 是一个面向 Codex 和 AI Agent 的开放 Skill 集合，用来沉淀从真实内容、增长、业务和 Agent 实践中提炼出的可复用能力。
+Open Creator 是一个面向内容创作者的开源 AI Skills 工具库，提供可安装、可组合的创作工具。
+
+仓库计划覆盖灵感与选题、资料研究、内容策划、文案写作、图文制作、视频生产、发布管理和内容复盘等创作环节。当前能力会持续按独立 Skill 的形式扩展。
 
 这个仓库采用“一个仓库，多个 Skill”的结构。每个 Skill 都是独立、可安装、可验证的能力单元；仓库根目录负责统一导航、贡献规范、版本记录和自动验证。
 
@@ -97,7 +99,7 @@ $project-harness 审查当前 AGENTS.md 和 PROJECT_STATE.md，删除不再有�
 
 ## Mental Model Info Cards
 
-Mental Model Info Cards 把“一项概念，六张卡讲清楚”的真实生产经验整理为可安装 Skill。它包含通用卡组协议、内容质量规则、初始化与校验脚本，以及可独立运行的 HTML/CSS/JS 渲染模板。
+Mental Model Info Cards 用六张卡解释一个思维模型或概念。它包含卡组协议、内容质量规则、初始化与校验脚本，以及可独立运行的 HTML/CSS/JS 渲染模板。
 
 - [使用说明](docs/mental-model-info-cards/README-使用说明.md)
 - [Skill 本体](skills/mental-model-info-cards/)
@@ -138,4 +140,4 @@ python3 scripts/validate_repo.py
 
 ## English summary
 
-Open Creator is an open collection of reusable Codex and AI Agent skills distilled from real content, growth, business, and agent workflows. Each skill lives under `skills/<skill-name>/` and is versioned independently.
+Open Creator is an open-source AI Skills toolkit for content creators, covering ideation, research, writing, visual content, video production, publishing, analytics, and creator workflows. Each Skill lives under `skills/<skill-name>/` and is versioned independently.
