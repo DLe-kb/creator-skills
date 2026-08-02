@@ -75,6 +75,29 @@ def validate_project_harness() -> None:
         fail(f"Missing project-harness files: {', '.join(missing)}")
 
 
+def validate_mental_model_info_cards() -> None:
+    skill_dir = SKILLS_DIR / "mental-model-info-cards"
+    required = {
+        "scripts/init_project.py",
+        "scripts/validate_project.mjs",
+        "references/card-protocol.md",
+        "references/content-quality.md",
+        "references/tool-guide.md",
+        "assets/template/README.md",
+        "assets/template/tool-v1/README.md",
+        "assets/template/tool-v1/index.html",
+        "assets/template/tool-v1/styles.css",
+        "assets/template/tool-v1/export.mjs",
+        "assets/template/tool-v1/data/models.js",
+        "assets/template/tool-v1/data/theme.js",
+        "assets/template/tool-v1/data/captions.md",
+        "assets/template/tool-v1/src/cards.js",
+    }
+    missing = sorted(path for path in required if not (skill_dir / path).is_file())
+    if missing:
+        fail(f"Missing mental-model-info-cards files: {', '.join(missing)}")
+
+
 def validate_plugin() -> None:
     data = json.loads(PLUGIN_FILE.read_text(encoding="utf-8"))
     for key in ("name", "version", "description", "author", "skills", "interface"):
@@ -111,6 +134,7 @@ def validate_repository_hygiene() -> None:
 def main() -> None:
     skill_files = validate_skills()
     validate_project_harness()
+    validate_mental_model_info_cards()
     validate_plugin()
     validate_repository_hygiene()
     print(f"Open Creator repository validation passed for {len(skill_files)} skill(s).")

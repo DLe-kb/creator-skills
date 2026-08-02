@@ -9,6 +9,7 @@ Open Creator 是一个面向 Codex 和 AI Agent 的开放 Skill 集合，用来�
 | Skill | 用途 | 当前版本 |
 | --- | --- | --- |
 | [`project-harness`](skills/project-harness/) | 为单个项目初始化、审查和维护轻量 Project Harness（项目脚手架 / 约束系统） | `0.1.0` |
+| [`mental-model-info-cards`](skills/mental-model-info-cards/) | 创建、导出和审查六张式思维模型与概念知识信息卡 | `0.1.0` |
 
 后续 Skill 会继续放在 `skills/<skill-name>/` 下，而不是创建新的独立仓库。
 
@@ -22,7 +23,7 @@ Open Creator 是一个面向 Codex 和 AI Agent 的开放 Skill 集合，用来�
 https://github.com/DLe-kb/open-creator
 ```
 
-并指定 Skill 名称，例如 `project-harness`。
+并指定 Skill 名称，例如 `project-harness` 或 `mental-model-info-cards`。
 
 ### 用户级手动安装
 
@@ -30,6 +31,7 @@ https://github.com/DLe-kb/open-creator
 git clone https://github.com/DLe-kb/open-creator.git ~/open-creator
 mkdir -p ~/.agents/skills
 ln -s ~/open-creator/skills/project-harness ~/.agents/skills/project-harness
+ln -s ~/open-creator/skills/mental-model-info-cards ~/.agents/skills/mental-model-info-cards
 ```
 
 更新仓库：
@@ -56,11 +58,14 @@ open-creator/
 ├── .codex-plugin/plugin.json
 ├── .github/workflows/validate.yml
 ├── docs/
+│   ├── mental-model-info-cards/
 │   └── project-harness/
 ├── examples/
+│   ├── mental-model-info-cards/
 │   └── project-harness/
 ├── scripts/validate_repo.py
 ├── skills/
+│   ├── mental-model-info-cards/
 │   └── project-harness/
 ├── AGENTS.md
 ├── CONTRIBUTING.md
@@ -90,6 +95,24 @@ $project-harness 为这个项目初始化最小协作骨架。
 $project-harness 审查当前 AGENTS.md 和 PROJECT_STATE.md，删除不再有用的管理负担。
 ```
 
+## Mental Model Info Cards
+
+Mental Model Info Cards 把“一项概念，六张卡讲清楚”的真实生产经验整理为可安装 Skill。它包含通用卡组协议、内容质量规则、初始化与校验脚本，以及可独立运行的 HTML/CSS/JS 渲染模板。
+
+- [使用说明](docs/mental-model-info-cards/README-使用说明.md)
+- [Skill 本体](skills/mental-model-info-cards/)
+- [第一性原理示例输出](examples/mental-model-info-cards/first-principles/)
+
+显式调用示例：
+
+```text
+$mental-model-info-cards 创建一个新的六张式概念知识信息卡项目。
+```
+
+```text
+$mental-model-info-cards 为“机会成本”制作、校验并导出一组六张知识卡。
+```
+
 ## 验证
 
 ```bash
@@ -107,7 +130,7 @@ python3 scripts/validate_repo.py
 <skill-name>-v<version>
 ```
 
-例如：`project-harness-v0.1.0`。
+例如：`project-harness-v0.1.0`、`mental-model-info-cards-v0.1.0`。
 
 ## License
 
