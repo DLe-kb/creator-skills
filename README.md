@@ -69,7 +69,6 @@ open-creator/
 ├── skills/
 │   ├── mental-model-info-cards/
 │   └── project-harness/
-├── AGENTS.md
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── CHANGELOG.md
