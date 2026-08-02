@@ -1,0 +1,32 @@
+{
+  "name": "open-creator",
+  "version": "0.1.0",
+  "description": "Reusable Codex and AI Agent skills distilled from real creator, growth, business, and agent workflows.",
+  "author": {
+    "name": "DLe-kb",
+    "url": "https://github.com/DLe-kb"
+  },
+  "homepage": "https://github.com/DLe-kb/open-creator#readme",
+  "repository": "https://github.com/DLe-kb/open-creator",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "agent-skills",
+    "creator-workflows",
+    "growth",
+    "ai-agents"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Open Creator",
+    "shortDescription": "来自真实内容、增长与 Agent 实践的开放 Skill 集合。",
+    "longDescription": "沉淀和发布从真实内容、增长、业务与 AI Agent 落地实践中提炼出的可复用 Codex Skills。",
+    "developerName": "DLe-kb",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": [
+      "列出 Open Creator 中可用的 Skills。",
+      "使用 $project-harness 初始化或审查当前项目。"
+    ]
+  }
+}
