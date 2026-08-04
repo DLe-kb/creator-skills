@@ -98,6 +98,35 @@ def validate_mental_model_info_cards() -> None:
         fail(f"Missing mental-model-info-cards files: {', '.join(missing)}")
 
 
+def validate_social_publisher() -> None:
+    skill_dir = SKILLS_DIR / "social-publisher"
+    required = {
+        "agents/openai.yaml",
+        "assets/publish-package.example.json",
+        "references/platform-fields.md",
+        "references/platform-routes.md",
+        "references/security-and-status.md",
+        "references/source-notes.md",
+        "scripts/platform_specs.json",
+        "scripts/requirements.txt",
+        "scripts/social_publish.py",
+    }
+    missing = sorted(path for path in required if not (skill_dir / path).is_file())
+    if missing:
+        fail(f"Missing social-publisher files: {', '.join(missing)}")
+
+    specs = json.loads((skill_dir / "scripts" / "platform_specs.json").read_text(encoding="utf-8"))
+    expected = {"bilibili", "douyin", "xiaohongshu", "wechat-channels", "youtube", "x", "tiktok"}
+    if set(specs) != expected:
+        fail("social-publisher platform set is incorrect")
+    if not all(item.get("free") is True for item in specs.values()):
+        fail("social-publisher default routes must all be free")
+    if specs["x"].get("default_route") != "browser-local-free":
+        fail("social-publisher X route must not require the paid API")
+    if specs["youtube"].get("default_route") != "youtube-data-api-free-quota":
+        fail("social-publisher YouTube route must use the free API quota")
+
+
 def validate_plugin() -> None:
     data = json.loads(PLUGIN_FILE.read_text(encoding="utf-8"))
     for key in ("name", "version", "description", "author", "skills", "interface"):
@@ -135,6 +164,7 @@ def main() -> None:
     skill_files = validate_skills()
     validate_project_harness()
     validate_mental_model_info_cards()
+    validate_social_publisher()
     validate_plugin()
     validate_repository_hygiene()
     print(f"Open Creator repository validation passed for {len(skill_files)} skill(s).")

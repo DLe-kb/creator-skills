@@ -12,6 +12,7 @@ Open Creator 是一个面向内容创作者的开源 AI Skills 工具库，提�
 | --- | --- | --- |
 | [`project-harness`](skills/project-harness/) | 为单个项目初始化、审查和维护轻量 Project Harness（项目脚手架 / 约束系统） | `0.1.0` |
 | [`mental-model-info-cards`](skills/mental-model-info-cards/) | 创建、导出和审查六张式思维模型与概念知识信息卡 | `0.1.0` |
+| [`social-publisher`](skills/social-publisher/) | 免费、本机优先地校验、准备和发布多平台视频 | `0.1.0` |
 
 后续 Skill 会继续放在 `skills/<skill-name>/` 下，而不是创建新的独立仓库。
 
@@ -34,6 +35,7 @@ git clone https://github.com/DLe-kb/open-creator.git ~/open-creator
 mkdir -p ~/.agents/skills
 ln -s ~/open-creator/skills/project-harness ~/.agents/skills/project-harness
 ln -s ~/open-creator/skills/mental-model-info-cards ~/.agents/skills/mental-model-info-cards
+ln -s ~/open-creator/skills/social-publisher ~/.agents/skills/social-publisher
 ```
 
 更新仓库：
@@ -61,10 +63,12 @@ open-creator/
 ├── .github/workflows/validate.yml
 ├── docs/
 │   ├── mental-model-info-cards/
-│   └── project-harness/
+│   ├── project-harness/
+│   └── social-publisher/
 ├── examples/
 │   ├── mental-model-info-cards/
-│   └── project-harness/
+│   ├── project-harness/
+│   └── social-publisher/
 ├── scripts/validate_repo.py
 ├── skills/
 │   ├── mental-model-info-cards/
@@ -112,6 +116,20 @@ $mental-model-info-cards 创建一个新的六张式概念知识信息卡项目�
 
 ```text
 $mental-model-info-cards 为“机会成本”制作、校验并导出一组六张知识卡。
+```
+
+## Social Publisher
+
+Social Publisher 使用统一发布包，把视频适配到 B站、抖音、小红书、视频号、YouTube、X 和 TikTok。X 等平台默认使用免费本机浏览器，YouTube 使用免费官方 API 配额，正式发布必须获得明确授权。
+
+- [使用说明](docs/social-publisher/README-使用说明.md)
+- [发布包示例](examples/social-publisher/publish-package.example.json)
+- [Skill 本体](skills/social-publisher/)
+
+显式调用示例：
+
+```text
+$social-publisher 校验这个发布包，并准备发布到抖音、小红书和 YouTube。
 ```
 
 ## 验证

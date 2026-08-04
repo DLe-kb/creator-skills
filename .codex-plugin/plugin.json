@@ -1,6 +1,6 @@
 {
   "name": "open-creator",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Open-source AI skills for content ideation, writing, visual creation, video production, publishing, and creator workflows.",
   "author": {
     "name": "DLe-kb",
@@ -27,7 +27,8 @@
     "defaultPrompt": [
       "列出 Open Creator 中可用的 Skills。",
       "使用 $project-harness 初始化或审查当前项目。",
-      "使用 $mental-model-info-cards 创建一组六张式概念知识信息卡。"
+      "使用 $mental-model-info-cards 创建一组六张式概念知识信息卡。",
+      "使用 $social-publisher 校验并准备多平台视频发布。"
     ]
   }
 }

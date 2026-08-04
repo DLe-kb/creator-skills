@@ -2,6 +2,14 @@
 
 本仓库中的 Skill 独立版本化。发布标签使用 `<skill-name>-v<version>`。
 
+## social-publisher 0.1.0 - 2026-08-04
+
+- 发布免费、本机优先的多平台视频发布 Skill。
+- 支持 B站 `biliup` 路由、五个平台可见浏览器路线和 YouTube Data API 免费配额路线。
+- 提供统一发布包、平台字段与素材规格校验、任务指纹和重复发布保护。
+- 正式发布必须同时使用 `--execute --authorized`，不确定结果不自动重试。
+- 登录态、OAuth token、报告和截图全部保存在公共仓库之外。
+
 ## mental-model-info-cards 0.1.0 - 2026-08-02
 
 - 发布六张式思维模型与概念知识信息卡 Skill。

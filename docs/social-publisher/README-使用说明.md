@@ -1,0 +1,130 @@
+# Social Publisher 使用说明
+
+`social-publisher` 是一个免费、本机优先的多平台视频发布 Skill。它把一个标准发布包适配到 B站、抖音、小红书、视频号、YouTube、X 和 TikTok，并在正式发布前保留明确的人类授权。
+
+## 已确定路线
+
+| 平台 | 执行方式 |
+| --- | --- |
+| B站 | 调用用户已有的 `biliup`，Skill 不重新管理登录态 |
+| 抖音 | 本机可见 Playwright 浏览器 |
+| 小红书 | 本机可见 Playwright 浏览器 |
+| 视频号 | 本机可见 Playwright 浏览器 |
+| YouTube | YouTube Data API 免费默认配额 |
+| X | 本机可见 Playwright 浏览器，不依赖付费 X API |
+| TikTok | 本机可见 Playwright 浏览器，不要求应用审核 |
+
+浏览器平台支持两步执行：`prepare` 自动上传和填写，`publish --execute --authorized` 在用户确认后点击最终发布按钮。YouTube 的 `prepare` 只校验发布内容，正式上传发生在授权后的 `publish`。
+
+## 安装运行依赖
+
+Skill 本身免费且开源。依赖也是开源软件，但平台账号、网络和内容权利由用户自行负责。
+
+```bash
+python3 -m pip install -r skills/social-publisher/scripts/requirements.txt
+python3 -m playwright install chromium
+```
+
+已有本机 Chrome 时，脚本会优先使用 Chrome；否则使用 Playwright Chromium。
+
+## 准备发布包
+
+参考：
+
+```text
+skills/social-publisher/assets/publish-package.example.json
+```
+
+不要把 OAuth 客户端文件、token、Cookie 或真实浏览器 profile 写进发布包。
+
+## 诊断与校验
+
+```bash
+python3 skills/social-publisher/scripts/social_publish.py doctor
+```
+
+```bash
+python3 skills/social-publisher/scripts/social_publish.py validate publish-package.json
+```
+
+只校验字段、不读取素材：
+
+```bash
+python3 skills/social-publisher/scripts/social_publish.py validate \
+  publish-package.json --metadata-only
+```
+
+## 浏览器平台
+
+首次登录：
+
+```bash
+python3 skills/social-publisher/scripts/social_publish.py login douyin --account main
+```
+
+免费试运行：
+
+```bash
+python3 skills/social-publisher/scripts/social_publish.py prepare \
+  publish-package.json --platform douyin --account main --dry-run
+```
+
+打开浏览器并填写，停在发布前：
+
+```bash
+python3 skills/social-publisher/scripts/social_publish.py prepare \
+  publish-package.json --platform douyin --account main
+```
+
+用户确认后发布：
+
+```bash
+python3 skills/social-publisher/scripts/social_publish.py publish \
+  publish-package.json --platform douyin --account main \
+  --execute --authorized
+```
+
+脚本填写完成后仍会停在页面上。只有再次输入 `PUBLISH`，才会点击最终发布按钮。
+
+把平台名替换为 `xiaohongshu`、`wechat-channels`、`x` 或 `tiktok`。
+
+## YouTube
+
+在 Google Cloud Console 创建 Desktop app（桌面应用）OAuth 客户端，启用 YouTube Data API v3，并把下载的客户端 JSON 保存在内容项目和 Git 仓库之外。
+
+授权：
+
+```bash
+python3 skills/social-publisher/scripts/social_publish.py login youtube \
+  --account main --client-secrets /secure/path/client-secret.json
+```
+
+校验：
+
+```bash
+python3 skills/social-publisher/scripts/social_publish.py prepare \
+  publish-package.json --platform youtube --account main --dry-run
+```
+
+授权发布：
+
+```bash
+python3 skills/social-publisher/scripts/social_publish.py publish \
+  publish-package.json --platform youtube --account main \
+  --client-secrets /secure/path/client-secret.json \
+  --execute --authorized
+```
+
+OAuth token 默认保存在 `~/.config/open-creator/social-publisher/oauth/`，权限设置为仅当前用户可读写。
+
+## 结果与重复发布
+
+运行报告保存在仓库外的 `reports/`。同一个 `content_id + platform + account + video SHA-256` 已产生 `published` 或 `uncertain` 记录时，脚本拒绝再次发布。只有人工确认平台没有创建作品后才能使用 `--force`。
+
+浏览器点击后无法获得作品 ID、URL 或明确成功提示时，结果为 `uncertain`，不会自动重试。
+
+## 来源与边界
+
+浏览器辅助流程借鉴了 `krillinai/autosocial-skills` 的本地登录态、可见浏览器和最终确认思路，当前实现重新设计了发布包、免费路线、素材校验、任务指纹和结果状态，没有复制用户登录态或私人截图。
+
+平台页面会持续变化。选择器失效时应先更新并用低风险账号完成 `prepare` 验证，不要直接测试正式发布。
