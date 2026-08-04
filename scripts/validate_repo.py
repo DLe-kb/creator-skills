@@ -108,6 +108,7 @@ def validate_social_publisher() -> None:
         "references/security-and-status.md",
         "references/source-notes.md",
         "scripts/platform_specs.json",
+        "scripts/bootstrap_runtime.py",
         "scripts/requirements.txt",
         "scripts/social_publish.py",
     }

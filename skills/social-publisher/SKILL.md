@@ -23,8 +23,11 @@ description: Validate, prepare, and publish video packages to Bilibili, Douyin, 
 2. 运行免费路线诊断：
 
 ```bash
-python3 scripts/social_publish.py doctor
+python3 scripts/bootstrap_runtime.py
+<runtime_python> scripts/social_publish.py doctor
 ```
+
+要求 Python 3.10 或更高版本。安装脚本会打印实际 `runtime_python` 路径，后续命令使用该解释器。
 
 3. 校验字段和素材：
 
@@ -59,6 +62,8 @@ python3 scripts/social_publish.py prepare /path/to/publish-package.json \
   --platform douyin --account main
 ```
 
+只有页面字段已填写、上传完成信号可确认，并且用户检查后输入 `READY`，才记录为 `prepared`。
+
 7. 仅在用户明确确认后执行最终点击：
 
 ```bash
@@ -90,4 +95,9 @@ python3 scripts/social_publish.py publish /path/to/publish-package.json \
 - `prepare` 使用可见浏览器并停在最终发布前。
 - 缺少 `--execute --authorized` 时，`publish` 必须拒绝执行。
 - API、浏览器页面或回读结果不明确时，不报告成功。
+- 使用 `stability` 汇总仓库外的运行证据；最近三次真实发布必须跨三个日期且全部成功，才能标记为 `stable（稳定）`。
 - 任何日志和示例都不包含真实凭证、私人路径或身份信息。
+
+```bash
+python3 scripts/social_publish.py stability --platform douyin --account main
+```

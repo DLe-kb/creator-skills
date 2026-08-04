@@ -7,7 +7,9 @@
 ```text
 ~/.config/open-creator/social-publisher/
 ├── profiles/<platform>/<account-alias>/
-├── reports/
+├── oauth/
+├── ledgers/
+├── runs/<platform>/<account-alias>/
 └── screenshots/
 ```
 
@@ -16,6 +18,7 @@
 ## 发布确认
 
 - `prepare` 只负责上传和填写。
+- `prepare` 必须确认上传完成、完成字段填写，并由用户输入 `READY` 才能记录为 `prepared`。
 - `publish` 必须同时出现 `--execute` 与 `--authorized`。
 - 浏览器页面填写完成后，仍需人工输入 `PUBLISH` 才能点击最终发布按钮。
 - 正式点击前再次打印平台、账号别名、content ID、视频 SHA-256、标题和可见范围。
@@ -27,6 +30,7 @@
 | --- | --- |
 | `validated` | 文件和字段通过本地校验 |
 | `prepared` | 页面已填写，尚未点击发布 |
+| `awaiting_review` | 等待人工检查页面或人工检查未通过 |
 | `awaiting_confirmation` | 等待用户授权最终写入 |
 | `published` | 已获得作品 ID、URL 或平台明确成功反馈 |
 | `uncertain` | 已点击但无法确认平台是否创建作品 |
@@ -38,3 +42,10 @@
 - 素材上传失败可以在确认没有创建作品后重试。
 - 最终发布请求、页面点击超时或网络中断后不要自动重试。
 - 先在创作者后台查询 content ID、标题和发布时间；仍不能确认时保持 `uncertain`。
+
+## 稳定性验收
+
+- 每次运行写入独立 `runs/` 报告，同时更新任务 `ledgers/` 最新状态。
+- 同一平台最近三次真实执行必须全部为 `published`，且分布在三个不同 UTC 日期，才能标记为 `stable`。
+- 有一次成功或三次 `prepared` 只能标记为 `conditional（有条件可用）`。
+- `uncertain` 不计为成功，也不得自动重试。

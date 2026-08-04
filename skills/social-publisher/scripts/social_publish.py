@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import hashlib
 import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -17,6 +19,8 @@ from typing import Any
 SCRIPT_DIR = Path(__file__).resolve().parent
 SPECS_FILE = SCRIPT_DIR / "platform_specs.json"
 DEFAULT_HOME = Path.home() / ".config" / "open-creator" / "social-publisher"
+BLOCKING_STATUSES = {"published", "uncertain"}
+ACCOUNT_PATTERN = re.compile(r"^[A-Za-z0-9_-]+$")
 
 
 class PublishError(RuntimeError):
@@ -223,6 +227,14 @@ def print_json(data: Any) -> None:
     print(json.dumps(data, ensure_ascii=False, indent=2))
 
 
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def iso_timestamp(moment: datetime | None = None) -> str:
+    return (moment or utc_now()).isoformat().replace("+00:00", "Z")
+
+
 def doctor() -> int:
     available = specs()
     google_ready = all(
@@ -230,6 +242,9 @@ def doctor() -> int:
         for module in ("googleapiclient", "google_auth_oauthlib")
     )
     playwright_ready = importlib.util.find_spec("playwright") is not None
+    browser_path = browser_executable()
+    if playwright_ready and not browser_path:
+        browser_path = playwright_browser_executable()
     result = {
         "free_mode": True,
         "runtime_home": str(runtime_home()),
@@ -239,6 +254,7 @@ def doctor() -> int:
             "youtube_api": google_ready,
             "ffprobe": shutil.which("ffprobe"),
             "biliup": shutil.which("biliup"),
+            "browser": browser_path,
         },
         "platforms": {
             name: {
@@ -247,7 +263,7 @@ def doctor() -> int:
                 "ready": (
                     bool(shutil.which("biliup")) if name == "bilibili"
                     else google_ready if name == "youtube"
-                    else playwright_ready
+                    else playwright_ready and bool(browser_path)
                 ),
             }
             for name, data in available.items()
@@ -268,12 +284,23 @@ def browser_executable() -> str | None:
     return None
 
 
+def playwright_browser_executable() -> str | None:
+    try:
+        from playwright.sync_api import sync_playwright
+
+        with sync_playwright() as playwright:
+            path = Path(playwright.chromium.executable_path)
+            return str(path) if path.is_file() else None
+    except Exception:
+        return None
+
+
 def require_playwright():
     try:
         from playwright.sync_api import sync_playwright
     except ImportError as exc:
         raise PublishError(
-            "缺少 Playwright。安装命令: python3 -m pip install playwright && python3 -m playwright install chromium"
+            "缺少 Playwright。安装命令: python3 -m pip install -r scripts/requirements.txt"
         ) from exc
     return sync_playwright
 
@@ -293,9 +320,7 @@ def require_youtube_api():
 
 
 def youtube_token_path(account: str) -> Path:
-    safe_account = "".join(char for char in account if char.isalnum() or char in "-_")
-    if not safe_account:
-        raise PublishError("账号别名只能包含字母、数字、连字符或下划线")
+    safe_account = safe_account_name(account)
     path = runtime_home() / "oauth" / "youtube" / f"{safe_account}.json"
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     return path
@@ -333,17 +358,36 @@ def youtube_service(account: str, client_secrets: Path | None):
 
 
 def profile_dir(platform: str, account: str) -> Path:
-    safe_account = "".join(char for char in account if char.isalnum() or char in "-_")
-    if not safe_account:
-        raise PublishError("账号别名只能包含字母、数字、连字符或下划线")
+    safe_account = safe_account_name(account)
     path = runtime_home() / "profiles" / platform / safe_account
     path.mkdir(parents=True, exist_ok=True, mode=0o700)
     return path
 
 
-def fill_first(page: Any, selectors: list[str], value: str) -> bool:
+def safe_account_name(account: str) -> str:
+    if not ACCOUNT_PATTERN.fullmatch(account):
+        raise PublishError("账号别名只能包含英文字母、数字、连字符或下划线")
+    return account
+
+
+def normalize_text(value: str) -> str:
+    return " ".join(value.split())
+
+
+def locator_text(locator: Any) -> str:
+    try:
+        return str(locator.input_value(timeout=1000) or "")
+    except Exception:
+        try:
+            return str(locator.inner_text(timeout=1000) or "")
+        except Exception:
+            return ""
+
+
+def fill_first(page: Any, selectors: list[str], value: str) -> dict[str, Any]:
+    result = {"requested": bool(value), "filled": False, "verified": False, "selector": None}
     if not value:
-        return False
+        return result
     for selector in selectors:
         locator = page.locator(selector).first
         try:
@@ -354,21 +398,179 @@ def fill_first(page: Any, selectors: list[str], value: str) -> bool:
                 except Exception:
                     page.keyboard.press("Meta+A")
                     page.keyboard.type(value, delay=5)
-                return True
+                page.wait_for_timeout(250)
+                observed = locator_text(locator)
+                expected_normalized = normalize_text(value)
+                observed_normalized = normalize_text(observed)
+                result.update({
+                    "filled": True,
+                    "verified": bool(observed_normalized) and (
+                        observed_normalized == expected_normalized
+                        or expected_normalized in observed_normalized
+                    ),
+                    "selector": selector,
+                })
+                return result
         except Exception:
             continue
-    return False
+    return result
 
 
-def report_path(fingerprint: str) -> Path:
-    path = runtime_home() / "reports" / f"{fingerprint}.json"
+def ledger_path(fingerprint: str) -> Path:
+    path = runtime_home() / "ledgers" / f"{fingerprint}.json"
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    return path
+
+
+def legacy_report_path(fingerprint: str) -> Path:
+    return runtime_home() / "reports" / f"{fingerprint}.json"
+
+
+def run_report_path(platform: str, account: str, fingerprint: str, moment: datetime | None = None) -> Path:
+    current = moment or utc_now()
+    stamp = current.strftime("%Y%m%dT%H%M%S.%fZ")
+    safe_account = safe_account_name(account)
+    path = runtime_home() / "runs" / platform / safe_account / f"{stamp}-{fingerprint}.json"
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     return path
 
 
 def write_report(path: Path, data: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     os.chmod(path, 0o600)
+
+
+def load_previous_report(fingerprint: str) -> dict[str, Any] | None:
+    for path in (ledger_path(fingerprint), legacy_report_path(fingerprint)):
+        if path.is_file():
+            return load_json(path)
+    return None
+
+
+def persist_run(data: dict[str, Any], fingerprint: str) -> Path:
+    path = run_report_path(str(data["platform"]), str(data["account"]), fingerprint)
+    write_report(path, data)
+    write_report(ledger_path(fingerprint), data)
+    return path
+
+
+def visible_enabled(page: Any, selectors: list[str]) -> tuple[Any | None, str | None, int]:
+    for selector in selectors:
+        locator = page.locator(selector)
+        visible: list[Any] = []
+        try:
+            for index in range(locator.count()):
+                candidate = locator.nth(index)
+                if candidate.is_visible(timeout=500) and candidate.is_enabled(timeout=500):
+                    visible.append(candidate)
+        except Exception:
+            continue
+        if len(visible) == 1:
+            return visible[0], selector, 1
+        if len(visible) > 1:
+            return None, selector, len(visible)
+    return None, None, 0
+
+
+def wait_for_upload_ready(page: Any, selectors: dict[str, Any], timeout_seconds: int) -> dict[str, Any]:
+    ready_selectors = selectors.get("upload_ready") or selectors.get("publish") or []
+    error_selectors = selectors.get("upload_error") or []
+    deadline = time.time() + timeout_seconds
+    while time.time() < deadline:
+        for selector in error_selectors:
+            try:
+                locator = page.locator(selector).first
+                if locator.count() and locator.is_visible(timeout=300):
+                    return {"ready": False, "error": locator_text(locator) or selector}
+            except Exception:
+                continue
+        button, selector, count = visible_enabled(page, ready_selectors)
+        if button is not None:
+            return {"ready": True, "selector": selector}
+        if count > 1:
+            return {"ready": False, "error": f"上传完成信号不唯一: {selector} 匹配 {count} 个元素"}
+        page.wait_for_timeout(1000)
+    return {"ready": False, "error": f"等待上传完成超过 {timeout_seconds} 秒"}
+
+
+def success_evidence(page: Any, selectors: dict[str, Any], timeout_seconds: int) -> dict[str, Any]:
+    deadline = time.time() + timeout_seconds
+    while time.time() < deadline:
+        for selector in selectors.get("publish_error") or []:
+            try:
+                locator = page.locator(selector).first
+                if locator.count() and locator.is_visible(timeout=300):
+                    return {"confirmed": False, "error": locator_text(locator) or selector}
+            except Exception:
+                continue
+        for selector in selectors.get("publish_success") or []:
+            try:
+                locator = page.locator(selector).first
+                if locator.count() and locator.is_visible(timeout=300):
+                    return {"confirmed": True, "selector": selector, "text": locator_text(locator)}
+            except Exception:
+                continue
+        page.wait_for_timeout(1000)
+    return {"confirmed": False, "error": f"{timeout_seconds} 秒内未获得明确成功反馈"}
+
+
+def evaluate_stability(records: list[dict[str, Any]]) -> dict[str, Any]:
+    ordered = sorted(records, key=lambda item: float(item.get("finished_at_unix") or 0))
+    published = [item for item in ordered if item.get("status") == "published"]
+    prepared = [item for item in ordered if item.get("status") == "prepared"]
+    executed = [item for item in ordered if item.get("execute") is True]
+    latest_three = executed[-3:]
+    days = {
+        str(item.get("finished_at") or "")[:10]
+        for item in published
+        if item.get("finished_at")
+    }
+    stable = (
+        len(latest_three) == 3
+        and all(item.get("status") == "published" for item in latest_three)
+        and len({str(item.get("finished_at") or "")[:10] for item in latest_three}) == 3
+    )
+    if stable:
+        level = "stable"
+    elif published or len(prepared) >= 3:
+        level = "conditional"
+    else:
+        level = "unverified"
+    return {
+        "level": level,
+        "runs": len(ordered),
+        "prepared": len(prepared),
+        "published": len(published),
+        "uncertain": sum(item.get("status") == "uncertain" for item in ordered),
+        "failed": sum(item.get("status") == "failed" for item in ordered),
+        "published_days": len(days),
+        "criterion": "latest 3 executed runs published on 3 distinct UTC dates",
+    }
+
+
+def stability(platform_names: list[str], account: str | None) -> int:
+    root = runtime_home() / "runs"
+    available = specs()
+    targets = platform_names or sorted(available)
+    output: dict[str, Any] = {}
+    for platform in targets:
+        if platform not in available:
+            raise PublishError(f"不支持的平台: {platform}")
+        records: list[dict[str, Any]] = []
+        search_root = root / platform
+        if search_root.is_dir():
+            for path in search_root.rglob("*.json"):
+                try:
+                    item = load_json(path)
+                except PublishError:
+                    continue
+                if account and item.get("account") != account:
+                    continue
+                records.append(item)
+        output[platform] = evaluate_stability(records)
+    print_json({"runtime_home": str(runtime_home()), "platforms": output})
+    return 0
 
 
 def task_fingerprint(content_id: str, platform: str, account: str, video_hash: str) -> str:
@@ -398,7 +600,18 @@ def login(platform: str, account: str, client_secrets: Path | None) -> int:
     return 0
 
 
-def browser_action(package_path: Path, platform: str, account: str, execute: bool, authorized: bool, dry_run: bool, force: bool) -> int:
+def browser_action(
+    package_path: Path,
+    platform: str,
+    account: str,
+    execute: bool,
+    authorized: bool,
+    dry_run: bool,
+    force: bool,
+    upload_timeout: int,
+    result_timeout: int,
+) -> int:
+    account = safe_account_name(account)
     if execute and not authorized:
         raise PublishError("正式发布必须同时提供 --execute 和 --authorized")
     if platform == "bilibili":
@@ -417,9 +630,8 @@ def browser_action(package_path: Path, platform: str, account: str, execute: boo
     cover = Path(validation["cover"]["path"]) if validation["cover"] else None
     video_hash = sha256(video)
     fingerprint = task_fingerprint(validation["content_id"], platform, account, video_hash)
-    ledger = report_path(fingerprint)
-    previous = load_json(ledger) if ledger.exists() else None
-    if execute and previous and previous.get("status") in {"published", "uncertain"} and not force:
+    previous = load_previous_report(fingerprint)
+    if execute and previous and previous.get("status") in BLOCKING_STATUSES and not force:
         raise PublishError(f"任务已有 {previous['status']} 记录，拒绝重复发布；确认后可使用 --force")
 
     summary = {
@@ -432,7 +644,16 @@ def browser_action(package_path: Path, platform: str, account: str, execute: boo
         "title": meta.get("title") or meta.get("short_title"),
         "visibility": meta.get("visibility", "public"),
         "execute": execute,
+        "manual_review_fields": [
+            "account",
+            "video_preview",
+            "cover" if cover else None,
+            "visibility",
+            "originality_and_rights",
+            "interaction_permissions",
+        ],
     }
+    summary["manual_review_fields"] = [item for item in summary["manual_review_fields"] if item]
     if dry_run:
         print_json({"status": "validated", **summary, "actions": ["open visible browser", "upload video", "fill platform fields", "stop before final publish" if not execute else "click final publish"]})
         return 0
@@ -440,10 +661,13 @@ def browser_action(package_path: Path, platform: str, account: str, execute: boo
     spec = specs()[platform]
     sync_playwright = require_playwright()
     started = time.time()
+    started_at = iso_timestamp()
     status = "failed"
     result_url = None
     error = None
-    screenshot_path = runtime_home() / "screenshots" / f"{fingerprint}.png"
+    evidence: dict[str, Any] = {}
+    screenshot_stamp = utc_now().strftime("%Y%m%dT%H%M%S.%fZ")
+    screenshot_path = runtime_home() / "screenshots" / platform / account / f"{screenshot_stamp}-{fingerprint}.png"
     screenshot_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
 
     try:
@@ -460,7 +684,7 @@ def browser_action(package_path: Path, platform: str, account: str, execute: boo
             file_input = page.locator("input[type='file']").first
             file_input.wait_for(state="attached", timeout=30000)
             file_input.set_input_files(str(video))
-            page.wait_for_timeout(6000)
+            page.wait_for_timeout(1000)
 
             selectors = spec.get("selectors") or {}
             title = str(meta.get("title") or "")
@@ -482,15 +706,40 @@ def browser_action(package_path: Path, platform: str, account: str, execute: boo
                 try:
                     if image_input.count():
                         image_input.set_input_files(str(cover))
-                        filled["cover"] = True
+                        filled["cover"] = {"requested": True, "filled": True, "verified": False}
                 except Exception:
-                    filled["cover"] = False
+                    filled["cover"] = {"requested": True, "filled": False, "verified": False}
+
+            missing_fields = [
+                name for name, result in filled.items()
+                if isinstance(result, dict) and result.get("requested") and not result.get("filled")
+            ]
+            if missing_fields:
+                raise PublishError(f"页面字段未完成填写，已停止: {', '.join(missing_fields)}")
+
+            upload = wait_for_upload_ready(page, selectors, upload_timeout)
+            evidence["upload"] = upload
+            if not upload.get("ready"):
+                raise PublishError(str(upload.get("error") or "无法确认视频上传完成"))
 
             page.screenshot(path=str(screenshot_path), full_page=True)
             if not execute:
+                print_json({
+                    "status": "awaiting_review",
+                    **summary,
+                    "filled": filled,
+                    "evidence": evidence,
+                    "screenshot": str(screenshot_path),
+                })
+                confirmation = input(
+                    "请检查账号、视频预览、封面、文案、声明和可见范围。不要点击发布；全部正确后输入 READY: "
+                )
+                if confirmation != "READY":
+                    status = "awaiting_review"
+                    raise PublishError("未输入 READY，本次 prepare 未通过人工验收")
                 status = "prepared"
-                print_json({"status": status, **summary, "filled": filled, "screenshot": str(screenshot_path)})
-                input("请在浏览器检查账号、封面、文案、声明和可见范围。不要点击发布；检查后按 Enter 退出...")
+                evidence["manual_review"] = "READY"
+                print_json({"status": status, **summary, "filled": filled, "evidence": evidence})
             else:
                 print_json({
                     "status": "awaiting_confirmation",
@@ -504,40 +753,46 @@ def browser_action(package_path: Path, platform: str, account: str, execute: boo
                 if confirmation != "PUBLISH":
                     status = "awaiting_confirmation"
                     raise PublishError("用户未输入 PUBLISH，已停止最终发布")
-                clicked = False
-                for selector in selectors.get("publish") or []:
-                    button = page.locator(selector).first
-                    try:
-                        if button.count() and button.is_visible(timeout=1000) and button.is_enabled(timeout=1000):
-                            button.click()
-                            clicked = True
-                            break
-                    except Exception:
-                        continue
-                if not clicked:
+                button, publish_selector, count = visible_enabled(page, selectors.get("publish") or [])
+                if count > 1:
+                    raise PublishError(f"最终发布按钮匹配到 {count} 个可用元素，拒绝点击")
+                if button is None:
                     raise PublishError("未找到唯一且可用的最终发布按钮，已停止")
-                page.wait_for_timeout(5000)
+                button.click()
+                evidence["publish_button"] = publish_selector
+                publish_result = success_evidence(page, selectors, result_timeout)
+                evidence["publish_result"] = publish_result
                 result_url = page.url
-                success_text = page.get_by_text("发布成功", exact=False)
-                status = "published" if success_text.count() else "uncertain"
+                status = "published" if publish_result.get("confirmed") else "uncertain"
                 page.screenshot(path=str(screenshot_path), full_page=True)
-                print_json({"status": status, **summary, "result_url": result_url, "screenshot": str(screenshot_path)})
+                print_json({
+                    "status": status,
+                    **summary,
+                    "result_url": result_url,
+                    "evidence": evidence,
+                    "screenshot": str(screenshot_path),
+                })
             context.close()
     except Exception as exc:
         error = str(exc)
         if isinstance(exc, PublishError):
             raise
     finally:
-        write_report(ledger, {
+        finished = time.time()
+        report = {
             **summary,
             "fingerprint": fingerprint,
             "status": status,
             "result_url": result_url,
             "error": error,
+            "evidence": evidence,
             "screenshot": str(screenshot_path) if screenshot_path.exists() else None,
             "started_at_unix": started,
-            "finished_at_unix": time.time(),
-        })
+            "finished_at_unix": finished,
+            "started_at": started_at,
+            "finished_at": iso_timestamp(),
+        }
+        persist_run(report, fingerprint)
 
     if error:
         raise PublishError(error)
@@ -553,6 +808,7 @@ def youtube_action(
     force: bool,
     client_secrets: Path | None,
 ) -> int:
+    account = safe_account_name(account)
     if execute and not authorized:
         raise PublishError("正式发布必须同时提供 --execute 和 --authorized")
     validation = validate_package(package_path, ["youtube"], metadata_only=False)
@@ -571,9 +827,8 @@ def youtube_action(
     cover = Path(validation["cover"]["path"]) if validation["cover"] else None
     video_hash = sha256(video)
     fingerprint = task_fingerprint(validation["content_id"], "youtube", account, video_hash)
-    ledger = report_path(fingerprint)
-    previous = load_json(ledger) if ledger.exists() else None
-    if execute and previous and previous.get("status") in {"published", "uncertain"} and not force:
+    previous = load_previous_report(fingerprint)
+    if execute and previous and previous.get("status") in BLOCKING_STATUSES and not force:
         raise PublishError(f"任务已有 {previous['status']} 记录，拒绝重复发布；确认后可使用 --force")
 
     summary = {
@@ -604,6 +859,9 @@ def youtube_action(
     result_url = None
     error = None
     started = time.time()
+    started_at = iso_timestamp()
+    evidence: dict[str, Any] = {}
+    created_video_id = None
     try:
         service, MediaFileUpload = youtube_service(account, client_secrets)
         body = {
@@ -633,28 +891,50 @@ def youtube_action(
         if not video_id:
             status = "uncertain"
             raise PublishError("YouTube API 未返回 video ID")
-        if cover:
-            service.thumbnails().set(
-                videoId=video_id,
-                media_body=MediaFileUpload(str(cover), resumable=False),
-            ).execute()
+        created_video_id = video_id
         result_url = f"https://youtu.be/{video_id}"
-        status = "published"
-        print_json({"status": status, **summary, "video_id": video_id, "result_url": result_url})
+        evidence["video_id"] = video_id
+        if cover:
+            try:
+                service.thumbnails().set(
+                    videoId=video_id,
+                    media_body=MediaFileUpload(str(cover), resumable=False),
+                ).execute()
+                evidence["thumbnail"] = "set"
+            except Exception as exc:
+                evidence["thumbnail"] = "failed"
+                evidence["thumbnail_error"] = str(exc)
+        verification = service.videos().list(part="id,status,snippet", id=video_id).execute()
+        items = verification.get("items") if isinstance(verification, dict) else None
+        evidence["api_readback"] = bool(items)
+        status = "published" if items else "uncertain"
+        print_json({
+            "status": status,
+            **summary,
+            "video_id": video_id,
+            "result_url": result_url,
+            "evidence": evidence,
+        })
     except Exception as exc:
         error = str(exc)
-        if status != "uncertain":
+        if created_video_id:
+            status = "uncertain"
+        elif status != "uncertain":
             status = "failed"
     finally:
-        write_report(ledger, {
+        finished = time.time()
+        persist_run({
             **summary,
             "fingerprint": fingerprint,
             "status": status,
             "result_url": result_url,
             "error": error,
+            "evidence": evidence,
             "started_at_unix": started,
-            "finished_at_unix": time.time(),
-        })
+            "finished_at_unix": finished,
+            "started_at": started_at,
+            "finished_at": iso_timestamp(),
+        }, fingerprint)
     if error:
         raise PublishError(error)
     return 0
@@ -669,6 +949,10 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument("package", type=Path)
     validate.add_argument("--platform", action="append", default=[])
     validate.add_argument("--metadata-only", action="store_true")
+
+    stability_parser = subparsers.add_parser("stability")
+    stability_parser.add_argument("--platform", action="append", default=[])
+    stability_parser.add_argument("--account")
 
     login_parser = subparsers.add_parser("login")
     login_parser.add_argument("platform", choices=sorted(specs()))
@@ -685,6 +969,8 @@ def build_parser() -> argparse.ArgumentParser:
         action.add_argument("--authorized", action="store_true")
         action.add_argument("--force", action="store_true")
         action.add_argument("--client-secrets", type=Path)
+        action.add_argument("--upload-timeout", type=int, default=600)
+        action.add_argument("--result-timeout", type=int, default=90)
     return parser
 
 
@@ -697,6 +983,8 @@ def main() -> int:
             result = validate_package(args.package.resolve(), args.platform, args.metadata_only)
             print_json(result)
             return 0 if result["ok"] else 1
+        if args.command == "stability":
+            return stability(args.platform, args.account)
         if args.command == "login":
             return login(args.platform, args.account, args.client_secrets)
         if args.command in {"prepare", "publish"}:
@@ -711,7 +999,17 @@ def main() -> int:
                     args.force,
                     args.client_secrets,
                 )
-            return browser_action(args.package.resolve(), args.platform, args.account, execute, args.authorized, args.dry_run, args.force)
+            return browser_action(
+                args.package.resolve(),
+                args.platform,
+                args.account,
+                execute,
+                args.authorized,
+                args.dry_run,
+                args.force,
+                args.upload_timeout,
+                args.result_timeout,
+            )
         raise PublishError("未知命令")
     except PublishError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)

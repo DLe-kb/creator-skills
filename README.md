@@ -72,7 +72,8 @@ open-creator/
 ├── scripts/validate_repo.py
 ├── skills/
 │   ├── mental-model-info-cards/
-│   └── project-harness/
+│   ├── project-harness/
+│   └── social-publisher/
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── CHANGELOG.md

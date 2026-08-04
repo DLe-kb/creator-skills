@@ -21,11 +21,16 @@
 Skill 本身免费且开源。依赖也是开源软件，但平台账号、网络和内容权利由用户自行负责。
 
 ```bash
-python3 -m pip install -r skills/social-publisher/scripts/requirements.txt
-python3 -m playwright install chromium
+python3 skills/social-publisher/scripts/bootstrap_runtime.py
 ```
 
-已有本机 Chrome 时，脚本会优先使用 Chrome；否则使用 Playwright Chromium。
+要求 Python 3.10 或更高版本。依赖会安装到仓库外按 Python 版本隔离的虚拟环境。已有本机 Chrome 时，脚本会直接使用 Chrome；没有受支持浏览器时，增加 `--install-browser` 下载 Playwright Chromium。
+
+下文的 `python3` 应替换为：
+
+```text
+bootstrap 输出的 runtime_python 路径
+```
 
 ## 准备发布包
 
@@ -84,7 +89,9 @@ python3 skills/social-publisher/scripts/social_publish.py publish \
   --execute --authorized
 ```
 
-脚本填写完成后仍会停在页面上。只有再次输入 `PUBLISH`，才会点击最终发布按钮。
+脚本填写完成后仍会停在页面上。`prepare` 只有在人工检查并输入 `READY` 后才算通过；正式发布只有再次输入 `PUBLISH`，才会点击最终发布按钮。
+
+浏览器路线会自动填写当前已适配的字段，但账号、视频预览、封面、可见范围、原创/版权声明和互动权限仍列为人工复核项。没有完成这些检查时不要输入 `READY` 或 `PUBLISH`。
 
 把平台名替换为 `xiaohongshu`、`wechat-channels`、`x` 或 `tiktok`。
 
@@ -119,9 +126,18 @@ OAuth token 默认保存在 `~/.config/open-creator/social-publisher/oauth/`，�
 
 ## 结果与重复发布
 
-运行报告保存在仓库外的 `reports/`。同一个 `content_id + platform + account + video SHA-256` 已产生 `published` 或 `uncertain` 记录时，脚本拒绝再次发布。只有人工确认平台没有创建作品后才能使用 `--force`。
+每次运行报告保存在仓库外的 `runs/`，任务最新状态保存在 `ledgers/`。同一个 `content_id + platform + account + video SHA-256` 已产生 `published` 或 `uncertain` 记录时，脚本拒绝再次发布。只有人工确认平台没有创建作品后才能使用 `--force`。
 
 浏览器点击后无法获得作品 ID、URL 或明确成功提示时，结果为 `uncertain`，不会自动重试。
+
+查看稳定性证据：
+
+```bash
+python3 skills/social-publisher/scripts/social_publish.py stability \
+  --platform douyin --account main
+```
+
+最近三次真实执行必须全部成功并分布在三个不同日期，才会显示 `stable（稳定）`。一次成功或三次页面准备成功只会显示 `conditional（有条件可用）`。
 
 ## 来源与边界
 
