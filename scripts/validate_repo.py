@@ -57,24 +57,6 @@ def validate_skills() -> list[Path]:
     return skill_files
 
 
-def validate_project_harness() -> None:
-    skill_dir = SKILLS_DIR / "project-harness"
-    required = {
-        "references/protocol-playbook.md",
-        "references/01_AGENTS.md",
-        "references/02_PROJECT_STATE.md",
-        "references/03_DECISIONS.md",
-        "references/04_DISCUSSION_QUEUE.md",
-        "references/05_RUNBOOK.md",
-        "references/06_REFERENCES.md",
-        "references/07_LESSONS_LEARNED.md",
-        "references/08_TASK_STATE.md",
-    }
-    missing = sorted(path for path in required if not (skill_dir / path).is_file())
-    if missing:
-        fail(f"Missing project-harness files: {', '.join(missing)}")
-
-
 def validate_mental_model_info_cards() -> None:
     skill_dir = SKILLS_DIR / "mental-model-info-cards"
     required = {
@@ -133,7 +115,6 @@ def validate_repository_hygiene() -> None:
 
 def main() -> None:
     skill_files = validate_skills()
-    validate_project_harness()
     validate_mental_model_info_cards()
     validate_plugin()
     validate_repository_hygiene()

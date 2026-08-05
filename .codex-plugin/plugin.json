@@ -26,7 +26,6 @@
     "capabilities": [],
     "defaultPrompt": [
       "列出 Open Creator 中可用的 Skills。",
-      "使用 $project-harness 初始化或审查当前项目。",
       "使用 $mental-model-info-cards 创建一组六张式概念知识信息卡。"
     ]
   }

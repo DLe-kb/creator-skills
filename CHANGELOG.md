@@ -2,6 +2,11 @@
 
 本仓库中的 Skill 独立版本化。发布标签使用 `<skill-name>-v<version>`。
 
+## Repository changes - 2026-08-05
+
+- `project-harness` 已退出 Open Creator 的公开发行范围，转入私有实践验证。
+- 删除其运行文件、公开文档、示例和 Plugin 调用入口；历史版本标签仅保留为发布记录。
+
 ## mental-model-info-cards 0.1.0 - 2026-08-02
 
 - 发布六张式思维模型与概念知识信息卡 Skill。
