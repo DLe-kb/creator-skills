@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:xhs-viral-content-analysis:analysis-result",
+  "title": "Xiaohongshu content analysis result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["analysis_status", "media_type", "analysis_scope", "evidence_records", "sample_analyses", "route_findings", "cross_sample_findings", "claim_boundaries"],
+  "properties": {
+    "analysis_status": {"enum": ["complete", "partial", "blocked"]},
+    "media_type": {"enum": ["image_post", "video_post"]},
+    "analysis_scope": {
+      "type": "object",
+      "required": ["platform", "subject", "objective", "included_sample_ids", "excluded_samples", "limitations"],
+      "properties": {
+        "platform": {"const": "xiaohongshu"},
+        "subject": {"type": "string", "minLength": 1},
+        "objective": {"type": "string", "minLength": 1},
+        "source_snapshot": {"type": ["string", "null"]},
+        "included_sample_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "excluded_samples": {"type": "array"},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "evidence_records": {"type": "array", "items": {"$ref": "#/$defs/evidenceRecord"}},
+    "sample_analyses": {"type": "array", "items": {"$ref": "#/$defs/sampleAnalysis"}},
+    "route_findings": {"type": "array", "items": {"$ref": "#/$defs/routeFinding"}},
+    "value_translations": {"type": "array", "items": {"$ref": "#/$defs/valueTranslation"}},
+    "replication_blueprints": {"type": "array", "items": {"$ref": "#/$defs/replicationBlueprint"}},
+    "cross_sample_findings": {"type": "array", "items": {"$ref": "#/$defs/crossSampleFinding"}},
+    "claim_boundaries": {"type": "array", "items": {"$ref": "#/$defs/claimBoundary"}},
+    "downstream_handoff": {"$ref": "#/$defs/downstreamHandoff"}
+  },
+  "$defs": {
+    "evidenceIds": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "carrier": {"enum": ["post_body", "image_cards", "scene_images", "mixed", "on_screen_text", "voiceover", "synced_subtitles", "visual_sequence", "mixed_video", "unclear"]},
+    "confidence": {"enum": ["high", "medium", "low"]},
+    "evidenceRecord": {
+      "type": "object",
+      "required": ["evidence_id", "sample_id", "source_type", "locator", "observation"],
+      "properties": {
+        "evidence_id": {"type": "string", "minLength": 1},
+        "sample_id": {"type": "string", "minLength": 1},
+        "source_type": {"enum": ["title", "cover", "body", "image", "video", "frame", "transcript", "subtitle", "audio", "comment", "metric", "metadata", "other"]},
+        "locator": {"type": "string", "minLength": 1},
+        "observation": {"type": "string", "minLength": 1}
+      }
+    },
+    "sampleAnalysis": {
+      "type": "object",
+      "required": ["sample_id", "user_task", "audience_problem", "product_role", "primary_carrier", "module_handoffs", "persuasion_nodes", "evidence_ids", "limitations"],
+      "properties": {
+        "sample_id": {"type": "string", "minLength": 1},
+        "user_task": {"type": "string"},
+        "audience_problem": {"type": "string"},
+        "product_role": {"type": "string"},
+        "primary_carrier": {"$ref": "#/$defs/carrier"},
+        "component_analysis": {"$ref": "#/$defs/componentAnalysis"},
+        "body_variables": {"$ref": "#/$defs/bodyVariables"},
+        "image_sequence_tasks": {"type": "array", "items": {"type": "string"}},
+        "video_analysis": {"$ref": "#/$defs/videoAnalysis"},
+        "module_handoffs": {"type": "array", "items": {"type": "string"}},
+        "persuasion_nodes": {"type": "array", "items": {"type": "string"}},
+        "evidence_ids": {"$ref": "#/$defs/evidenceIds"},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "componentAnalysis": {
+      "type": "object",
+      "required": ["title", "cover", "opening_hook", "body", "image_sequence_and_carrier", "decision_close", "evidence_and_risk"],
+      "properties": {
+        "title": {"type": "string"}, "cover": {"type": "string"}, "opening_hook": {"type": "string"},
+        "body": {"type": "string"}, "image_sequence_and_carrier": {"type": "string"},
+        "decision_close": {"type": "string"}, "evidence_and_risk": {"type": "string"}
+      }
+    },
+    "bodyVariables": {
+      "type": "object",
+      "required": ["opening", "pain_organization", "product_entry", "value_translation", "experience_details", "final_judgment"],
+      "properties": {
+        "opening": {"type": "string"}, "pain_organization": {"type": "string"}, "product_entry": {"type": "string"},
+        "value_translation": {"type": "string"}, "experience_details": {"type": "string"}, "final_judgment": {"type": "string"}
+      }
+    },
+    "videoAnalysis": {
+      "type": "object",
+      "required": ["content_promise", "timeline_segments", "opening_analysis", "on_screen_copy_analysis", "voiceover_copy_analysis", "persuasion_chain", "audio_visual_summary", "comment_signals"],
+      "properties": {
+        "content_promise": {"type": "string"},
+        "timeline_segments": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/timelineSegment"}},
+        "opening_analysis": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/openingPoint"}},
+        "on_screen_copy_analysis": {"type": "array", "items": {"$ref": "#/$defs/copySegment"}},
+        "voiceover_copy_analysis": {"type": "array", "items": {"$ref": "#/$defs/copySegment"}},
+        "persuasion_chain": {"type": "array", "items": {"$ref": "#/$defs/persuasionNode"}},
+        "audio_visual_summary": {"type": "string"},
+        "comment_signals": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "timelineSegment": {
+      "type": "object",
+      "required": ["start", "end", "information_task", "spoken_copy", "on_screen_copy", "visual", "audio_visual_relation", "viewer_state_before", "viewer_state_after", "evidence_ids", "limitations"],
+      "properties": {
+        "start": {"type": "number", "minimum": 0}, "end": {"type": "number", "exclusiveMinimum": 0},
+        "information_task": {"type": "string"}, "spoken_copy": {"type": "string"}, "on_screen_copy": {"type": "string"},
+        "visual": {"type": "string"}, "audio_visual_relation": {"enum": ["repeat", "complement", "prove", "contrast", "advance", "decorative"]},
+        "viewer_state_before": {"type": "string"}, "viewer_state_after": {"type": "string"},
+        "evidence_ids": {"$ref": "#/$defs/evidenceIds"}, "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "openingPoint": {
+      "type": "object", "required": ["time", "observation", "viewer_reason_to_continue", "evidence_ids"],
+      "properties": {"time": {"type": "number", "minimum": 0, "maximum": 5}, "observation": {"type": "string"}, "viewer_reason_to_continue": {"type": "string"}, "evidence_ids": {"$ref": "#/$defs/evidenceIds"}}
+    },
+    "copySegment": {
+      "type": "object",
+      "required": ["start", "end", "copy_summary", "copy_task", "viewer_effect", "viewer_shift", "evidence_status", "risk", "evidence_ids"],
+      "properties": {
+        "start": {"type": "number", "minimum": 0}, "end": {"type": "number", "exclusiveMinimum": 0},
+        "copy_summary": {"type": "string"}, "copy_task": {"type": "string"}, "viewer_effect": {"type": "string"}, "viewer_shift": {"type": "string"},
+        "evidence_status": {"enum": ["source_fact", "observed_pattern", "analysis_inference", "hypothesis", "human_confirmed"]},
+        "risk": {"type": "string"}, "evidence_ids": {"$ref": "#/$defs/evidenceIds"}
+      }
+    },
+    "persuasionNode": {
+      "type": "object", "required": ["node", "function", "viewer_shift", "evidence_ids"],
+      "properties": {"node": {"type": "string"}, "function": {"type": "string"}, "viewer_shift": {"type": "string"}, "evidence_ids": {"$ref": "#/$defs/evidenceIds"}}
+    },
+    "routeFinding": {
+      "type": "object",
+      "required": ["route_id", "label", "status", "supporting_sample_ids", "user_task", "core_tension", "primary_carrier", "product_position_and_role", "use_conditions", "non_applicable_conditions", "module_handoffs", "persuasion_nodes", "contrary_evidence", "evidence_ids", "confidence", "limitations"],
+      "properties": {
+        "route_id": {"type": "string", "minLength": 1}, "label": {"type": "string", "minLength": 1},
+        "status": {"enum": ["observed", "single_sample", "hypothesis"]},
+        "replication_readiness": {"enum": ["ready", "conditional", "research_only"]},
+        "blocking_inputs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "supporting_sample_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "user_task": {"type": "string"}, "core_tension": {"type": "string"}, "primary_carrier": {"$ref": "#/$defs/carrier"},
+        "product_position_and_role": {"type": "string"}, "use_conditions": {"type": "array", "items": {"type": "string"}},
+        "non_applicable_conditions": {"type": "array", "items": {"type": "string"}}, "module_handoffs": {"type": "array", "items": {"type": "string"}},
+        "persuasion_nodes": {"type": "array", "items": {"type": "string"}}, "contrary_evidence": {"type": "array", "items": {"type": "string"}},
+        "evidence_ids": {"$ref": "#/$defs/evidenceIds"}, "confidence": {"$ref": "#/$defs/confidence"}, "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "valueTranslation": {
+      "type": "object", "required": ["user_friction", "feature_or_content_detail", "user_value", "product_role", "evidence_ids", "claim_risk"],
+      "properties": {"user_friction": {"type": "string"}, "feature_or_content_detail": {"type": "string"}, "user_value": {"type": "string"}, "product_role": {"type": "string"}, "evidence_ids": {"$ref": "#/$defs/evidenceIds"}, "claim_risk": {"enum": ["low", "medium", "high", "unknown"]}}
+    },
+    "replicationBlueprint": {
+      "type": "object", "required": ["route_id", "audience_and_task", "opening_fields", "timeline_tasks", "on_screen_copy_fields", "voiceover_fields", "shot_responsibilities", "product_entry", "objections_and_close", "success_conditions", "failure_conditions", "evidence_ids", "limitations"],
+      "properties": {
+        "route_id": {"type": "string"}, "audience_and_task": {"type": "string"}, "opening_fields": {"type": "array", "items": {"type": "string"}},
+        "timeline_tasks": {"type": "array", "items": {"type": "string"}}, "on_screen_copy_fields": {"type": "array", "items": {"type": "string"}},
+        "voiceover_fields": {"type": "array", "items": {"type": "string"}}, "shot_responsibilities": {"type": "array", "items": {"type": "string"}},
+        "product_entry": {"type": "string"}, "objections_and_close": {"type": "array", "items": {"type": "string"}},
+        "success_conditions": {"type": "array", "items": {"type": "string"}}, "failure_conditions": {"type": "array", "items": {"type": "string"}},
+        "evidence_ids": {"$ref": "#/$defs/evidenceIds"}, "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "crossSampleFinding": {
+      "type": "object", "required": ["finding", "finding_type", "scope", "evidence_ids", "confidence", "limitations"],
+      "properties": {"finding": {"type": "string"}, "finding_type": {"enum": ["source_fact", "observed_pattern", "analysis_inference", "hypothesis", "human_confirmed"]}, "scope": {"type": "string"}, "evidence_ids": {"$ref": "#/$defs/evidenceIds"}, "confidence": {"$ref": "#/$defs/confidence"}, "limitations": {"type": "array", "items": {"type": "string"}}}
+    },
+    "claimBoundary": {
+      "type": "object", "required": ["claim", "classification", "support_status", "evidence_ids", "reason"],
+      "properties": {"claim": {"type": "string"}, "classification": {"enum": ["observable", "product_fact", "personal_experience", "health_effect", "mechanism", "comparison", "other"]}, "support_status": {"enum": ["supported", "conditional", "unsupported", "unknown"]}, "evidence_ids": {"$ref": "#/$defs/evidenceIds"}, "reason": {"type": "string"}}
+    },
+    "downstreamHandoff": {
+      "type": "object", "required": ["usable_for_note_skill", "recommended_route_ids", "missing_inputs", "prohibited_assumptions"],
+      "properties": {"usable_for_note_skill": {"type": "boolean"}, "recommended_route_ids": {"type": "array", "items": {"type": "string"}}, "missing_inputs": {"type": "array", "items": {"type": "string"}}, "prohibited_assumptions": {"type": "array", "items": {"type": "string"}}}
+    }
+  }
+}

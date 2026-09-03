@@ -80,6 +80,30 @@ def validate_mental_model_info_cards() -> None:
         fail(f"Missing mental-model-info-cards files: {', '.join(missing)}")
 
 
+def validate_xhs_viral_content_analysis() -> None:
+    skill_dir = SKILLS_DIR / "xhs-viral-content-analysis"
+    required = {
+        "agents/openai.yaml",
+        "assets/XHS-Image-Post-Audit-Template.html",
+        "assets/XHS-Video-Post-Audit-Template.html",
+        "references/analysis-result-contract.md",
+        "references/analysis-result.schema.json",
+        "references/html-report-contract.md",
+        "references/html-report-visual-system.md",
+        "references/image-post-analysis.md",
+        "references/shared-analysis-core.md",
+        "references/video-post-analysis.md",
+        "scripts/embed_html_images.py",
+        "scripts/test_validate_analysis_result.py",
+        "scripts/test_validate_html_report.py",
+        "scripts/validate_analysis_result.py",
+        "scripts/validate_html_report.py",
+    }
+    missing = sorted(path for path in required if not (skill_dir / path).is_file())
+    if missing:
+        fail(f"Missing xhs-viral-content-analysis files: {', '.join(missing)}")
+
+
 def validate_plugin() -> None:
     data = json.loads(PLUGIN_FILE.read_text(encoding="utf-8"))
     for key in ("name", "version", "description", "author", "skills", "interface"):
@@ -116,6 +140,7 @@ def validate_repository_hygiene() -> None:
 def main() -> None:
     skill_files = validate_skills()
     validate_mental_model_info_cards()
+    validate_xhs_viral_content_analysis()
     validate_plugin()
     validate_repository_hygiene()
     print(f"Open Creator repository validation passed for {len(skill_files)} skill(s).")
