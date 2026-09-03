@@ -1,6 +1,6 @@
 {
   "name": "open-creator",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Open-source AI skills for content ideation, writing, visual creation, video production, publishing, and creator workflows.",
   "author": {
     "name": "DLe-kb",
@@ -23,10 +23,13 @@
     "longDescription": "提供覆盖选题、研究、写作、图文、视频、发布与内容工作流的可安装 Codex Skills。",
     "developerName": "DLe-kb",
     "category": "Productivity",
-    "capabilities": [],
+    "capabilities": [
+      "content-analysis"
+    ],
     "defaultPrompt": [
       "列出 Open Creator 中可用的 Skills。",
-      "使用 $mental-model-info-cards 创建一组六张式概念知识信息卡。"
+      "使用 $mental-model-info-cards 创建一组六张式概念知识信息卡。",
+      "使用 $xhs-viral-content-analysis 分析一批小红书图文或视频内容。"
     ]
   }
 }

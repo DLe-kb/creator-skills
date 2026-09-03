@@ -8,9 +8,10 @@ Open Creator 是一个面向内容创作者的开源 AI Skills 工具库，提�
 
 ## Skills
 
-| Skill | 用途 | 当前版本 |
-| --- | --- | --- |
-| [`mental-model-info-cards`](skills/mental-model-info-cards/) | 创建、导出和审查六张式思维模型与概念知识信息卡 | `0.1.0` |
+| Skill | 用途 |
+| --- | --- |
+| [`mental-model-info-cards`](skills/mental-model-info-cards/) | 创建、导出和审查六张式思维模型与概念知识信息卡 |
+| [`xhs-viral-content-analysis`](skills/xhs-viral-content-analysis/) | 解析小红书图文或视频内容，交付证据化 HTML 报告和结构化 JSON |
 
 后续 Skill 会继续放在 `skills/<skill-name>/` 下，而不是创建新的独立仓库。
 
@@ -24,7 +25,7 @@ Open Creator 是一个面向内容创作者的开源 AI Skills 工具库，提�
 https://github.com/DLe-kb/open-creator
 ```
 
-并指定 Skill 名称，例如 `mental-model-info-cards`。
+并指定 Skill 名称，例如 `mental-model-info-cards` 或 `xhs-viral-content-analysis`。
 
 ### 用户级手动安装
 
@@ -32,6 +33,7 @@ https://github.com/DLe-kb/open-creator
 git clone https://github.com/DLe-kb/open-creator.git ~/open-creator
 mkdir -p ~/.agents/skills
 ln -s ~/open-creator/skills/mental-model-info-cards ~/.agents/skills/mental-model-info-cards
+ln -s ~/open-creator/skills/xhs-viral-content-analysis ~/.agents/skills/xhs-viral-content-analysis
 ```
 
 更新仓库：
@@ -58,12 +60,14 @@ open-creator/
 ├── .codex-plugin/plugin.json
 ├── .github/workflows/validate.yml
 ├── docs/
-│   └── mental-model-info-cards/
+│   ├── mental-model-info-cards/
+│   └── xhs-viral-content-analysis/
 ├── examples/
 │   └── mental-model-info-cards/
 ├── scripts/validate_repo.py
 ├── skills/
-│   └── mental-model-info-cards/
+│   ├── mental-model-info-cards/
+│   └── xhs-viral-content-analysis/
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── CHANGELOG.md
@@ -90,6 +94,23 @@ $mental-model-info-cards 创建一个新的六张式概念知识信息卡项目�
 $mental-model-info-cards 为“机会成本”制作、校验并导出一组六张知识卡。
 ```
 
+## XHS Viral Content Analysis
+
+XHS Viral Content Analysis 用于解析一批小红书图文或视频笔记，识别信息任务、主要载体、内容路线、说服结构、价值转译和风险边界。它输出可独立审阅的单文件 HTML 报告与结构化 JSON，不直接生成或发布新内容。
+
+- [使用说明](docs/xhs-viral-content-analysis/README-使用说明.md)
+- [Skill 本体](skills/xhs-viral-content-analysis/)
+
+显式调用示例：
+
+```text
+$xhs-viral-content-analysis 分析这批小红书图文内容，输出带原帖证据的 HTML 报告和结构化 JSON。
+```
+
+```text
+$xhs-viral-content-analysis 分析这批小红书视频，重点拆解前 5 秒、画面文字、口播、声画关系和观众决策链。
+```
+
 ## 验证
 
 ```bash
@@ -97,17 +118,11 @@ python3 -m pip install -r requirements-dev.txt
 python3 scripts/validate_repo.py
 ```
 
-验证会扫描所有 `skills/*/SKILL.md`，检查 Skill 元数据、目录命名、插件清单、仓库链接、本机绝对路径、TODO 占位符和 Finder 缓存。GitHub Actions 会在每次 push 和 pull request 时运行相同检查。
+验证会扫描所有 `skills/*/SKILL.md`，检查 Skill 元数据、目录命名、插件清单、仓库链接、本机绝对路径、TODO 占位符和 Finder 缓存。GitHub Actions 还会运行 `xhs-viral-content-analysis` 自带的 HTML 与 JSON 校验器测试。
 
-## 版本
+## 发布
 
-不同 Skill 独立发布，标签格式为：
-
-```text
-<skill-name>-v<version>
-```
-
-例如：`mental-model-info-cards-v0.1.0`。
+不同 Skill 独立演进。公开能力、使用方式和重要变更以 Skill 本体、使用说明与 `CHANGELOG.md` 为准。
 
 ## License
 
