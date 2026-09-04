@@ -1,4 +1,4 @@
 interface:
   display_name: "小红书爆款解析"
-  short_description: "解析小红书图文或视频，交付可复核的 HTML 与结构化结果"
-  default_prompt: "使用 $xhs-viral-content-analysis 分析这批小红书内容样本，先按图文或视频完成媒体路由，再输出可直接审阅的单文件 HTML 报告和结构化 JSON 结果包。"
+  short_description: "解析小红书内容，或综合多份分析报告，交付可复核的 HTML 与 JSON"
+  default_prompt: "使用 $xhs-viral-content-analysis 判断本次应走单批内容解析还是跨报告综合，再输出可直接审阅的单文件 HTML 报告和结构化 JSON 结果包。"

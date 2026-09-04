@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:xhs-viral-content-analysis:synthesis-result",
+  "title": "Xiaohongshu cross-report synthesis result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "synthesis_status",
+    "platform",
+    "synthesis_scope",
+    "report_records",
+    "evidence_records",
+    "common_mechanisms",
+    "route_families",
+    "media_differences",
+    "subject_differences",
+    "applicability_levels",
+    "claim_boundaries"
+  ],
+  "properties": {
+    "synthesis_status": {"enum": ["complete", "partial", "blocked"]},
+    "platform": {"const": "xiaohongshu"},
+    "synthesis_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject", "objective", "included_report_ids", "limitations"],
+      "properties": {
+        "subject": {"type": "string", "minLength": 1},
+        "objective": {"type": "string", "minLength": 1},
+        "source_snapshot": {"type": ["string", "null"]},
+        "included_report_ids": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "report_records": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/reportRecord"}},
+    "evidence_records": {"type": "array", "items": {"$ref": "#/$defs/evidenceRecord"}},
+    "common_mechanisms": {"type": "array", "items": {"$ref": "#/$defs/commonMechanism"}},
+    "route_families": {"type": "array", "items": {"$ref": "#/$defs/routeFamily"}},
+    "media_differences": {"type": "array", "items": {"$ref": "#/$defs/differenceFinding"}},
+    "subject_differences": {"type": "array", "items": {"$ref": "#/$defs/differenceFinding"}},
+    "applicability_levels": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/applicabilityLevel"}},
+    "diagnostic_questions": {"type": "array", "items": {"$ref": "#/$defs/diagnosticQuestion"}},
+    "claim_boundaries": {"type": "array", "items": {"$ref": "#/$defs/claimBoundary"}}
+  },
+  "$defs": {
+    "idList": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "confidence": {"enum": ["high", "medium", "low"]},
+    "findingType": {"enum": ["source_fact", "observed_pattern", "analysis_inference", "hypothesis", "human_confirmed"]},
+    "reportRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["report_id", "subject", "media_type", "analysis_status", "source_class", "included_sample_count", "sample_ids", "limitations"],
+      "properties": {
+        "report_id": {"type": "string", "minLength": 1},
+        "subject": {"type": "string", "minLength": 1},
+        "media_type": {"enum": ["image_post", "video_post", "mixed", "unknown"]},
+        "analysis_status": {"enum": ["complete", "partial", "blocked"]},
+        "source_class": {"enum": ["enterprise", "external_public", "mixed", "unknown"]},
+        "included_sample_count": {"type": "integer", "minimum": 0},
+        "sample_ids": {"$ref": "#/$defs/idList"},
+        "locator": {"type": ["string", "null"]},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "evidenceRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "report_id", "source_type", "locator", "observation"],
+      "properties": {
+        "evidence_id": {"type": "string", "minLength": 1},
+        "report_id": {"type": "string", "minLength": 1},
+        "sample_id": {"type": ["string", "null"]},
+        "source_type": {"enum": ["report_finding", "report_route", "page", "image", "frame", "metric", "metadata", "other"]},
+        "locator": {"type": "string", "minLength": 1},
+        "observation": {"type": "string", "minLength": 1}
+      }
+    },
+    "commonMechanism": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mechanism_id", "label", "finding", "finding_type", "scope", "supporting_report_ids", "supporting_sample_ids", "supporting_evidence_ids", "representative_evidence_ids", "contrary_evidence", "confidence", "limitations"],
+      "properties": {
+        "mechanism_id": {"type": "string", "minLength": 1},
+        "label": {"type": "string", "minLength": 1},
+        "finding": {"type": "string", "minLength": 1},
+        "finding_type": {"$ref": "#/$defs/findingType"},
+        "scope": {"type": "string", "minLength": 1},
+        "supporting_report_ids": {"$ref": "#/$defs/idList"},
+        "supporting_sample_ids": {"$ref": "#/$defs/idList"},
+        "supporting_evidence_ids": {"$ref": "#/$defs/idList"},
+        "representative_evidence_ids": {"$ref": "#/$defs/idList"},
+        "contrary_evidence": {"type": "array", "items": {"type": "string"}},
+        "confidence": {"$ref": "#/$defs/confidence"},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "routeFamily": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["route_family_id", "label", "status", "user_task", "core_tension", "primary_carriers", "use_conditions", "non_applicable_conditions", "source_route_labels", "supporting_report_ids", "supporting_sample_ids", "supporting_evidence_ids", "representative_evidence_ids", "confidence", "limitations"],
+      "properties": {
+        "route_family_id": {"type": "string", "minLength": 1},
+        "label": {"type": "string", "minLength": 1},
+        "status": {"enum": ["cross_report_observed", "single_report", "hypothesis"]},
+        "user_task": {"type": "string"},
+        "core_tension": {"type": "string"},
+        "primary_carriers": {"type": "array", "items": {"type": "string"}},
+        "use_conditions": {"type": "array", "items": {"type": "string"}},
+        "non_applicable_conditions": {"type": "array", "items": {"type": "string"}},
+        "source_route_labels": {"type": "array", "items": {"type": "string"}},
+        "supporting_report_ids": {"$ref": "#/$defs/idList"},
+        "supporting_sample_ids": {"$ref": "#/$defs/idList"},
+        "supporting_evidence_ids": {"$ref": "#/$defs/idList"},
+        "representative_evidence_ids": {"$ref": "#/$defs/idList"},
+        "confidence": {"$ref": "#/$defs/confidence"},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "differenceFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimension", "finding", "finding_type", "supporting_report_ids", "evidence_ids", "confidence", "limitations"],
+      "properties": {
+        "dimension": {"type": "string", "minLength": 1},
+        "finding": {"type": "string", "minLength": 1},
+        "finding_type": {"$ref": "#/$defs/findingType"},
+        "supporting_report_ids": {"$ref": "#/$defs/idList"},
+        "evidence_ids": {"$ref": "#/$defs/idList"},
+        "confidence": {"$ref": "#/$defs/confidence"},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "applicabilityLevel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "label", "statement", "support_status", "evidence_ids"],
+      "properties": {
+        "level": {"enum": ["direct_supported", "migration_candidate", "platform_hypothesis", "outcome_unverified"]},
+        "label": {"type": "string", "minLength": 1},
+        "statement": {"type": "string", "minLength": 1},
+        "support_status": {"enum": ["supported", "conditional", "unsupported", "unknown"]},
+        "evidence_ids": {"$ref": "#/$defs/idList"}
+      }
+    },
+    "diagnosticQuestion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question", "judgment", "mechanism_ids"],
+      "properties": {
+        "question": {"type": "string", "minLength": 1},
+        "judgment": {"type": "string", "minLength": 1},
+        "mechanism_ids": {"$ref": "#/$defs/idList"}
+      }
+    },
+    "claimBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim", "support_status", "evidence_ids", "reason"],
+      "properties": {
+        "claim": {"type": "string", "minLength": 1},
+        "support_status": {"enum": ["supported", "conditional", "unsupported", "unknown"]},
+        "evidence_ids": {"$ref": "#/$defs/idList"},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

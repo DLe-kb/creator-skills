@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{REPORT_TITLE}}</title>
+  <style>
+    :root {
+      --paper: #f4f3ef;
+      --paper-deep: #ebe9e3;
+      --white: #fff;
+      --ink: #18201c;
+      --ink-soft: #39463f;
+      --muted: #6d766f;
+      --line: #d5d6d1;
+      --red: #a94b43;
+      --green: #315f4d;
+      --green-soft: #e1ebe5;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      letter-spacing: 0;
+    }
+    button { font: inherit; }
+    img { max-width: 100%; }
+    h1, h2, h3, h4, p { margin-top: 0; overflow-wrap: anywhere; }
+    .wrap { width: min(calc(100% - 40px), 1280px); margin: 0 auto; }
+    .topbar { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line); background: rgba(244, 243, 239, .96); }
+    .topbar-inner { display: flex; min-width: 0; min-height: 62px; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { min-width: 0; font-weight: 800; }
+    .topnav { display: flex; min-width: 0; gap: 22px; overflow-x: auto; scrollbar-width: none; }
+    .topnav a { flex: 0 0 auto; color: var(--ink-soft); font-size: 13px; text-decoration: none; }
+    .hero { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .55fr); gap: 0 48px; padding: 62px 0 0; }
+    .hero-copy { min-width: 0; padding: 30px 40px 30px 0; border-top: 9px solid var(--ink); }
+    .report-kicker { margin-bottom: 14px; color: var(--red); font-size: 13px; font-weight: 800; }
+    h1 { max-width: 900px; margin-bottom: 18px; font-size: clamp(38px, 4vw, 54px); line-height: 1.1; }
+    .hero-lead { width: 100%; max-width: none; margin-bottom: 0; color: var(--ink-soft); font-size: 18px; }
+    .audit-meta { display: grid; min-width: 0; margin: 0; grid-template-columns: 104px minmax(0, 1fr); align-content: start; padding: 24px 0 18px 34px; border-top: 9px solid var(--ink); border-left: 1px solid var(--line); }
+    .audit-meta dt, .audit-meta dd { min-width: 0; margin: 0; padding: 11px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+    .audit-meta dt { color: var(--muted); font-size: 12px; font-weight: 800; }
+    .audit-meta dd { font-size: 14px; font-weight: 700; }
+    .hero-conclusion { grid-column: 1 / -1; padding: 28px; background: var(--ink); color: #edf1ee; }
+    .hero-conclusion h2 { margin-bottom: 10px; font-size: 24px; }
+    .hero-conclusion > p { width: 100%; max-width: none; margin-bottom: 18px; color: #cdd5d0; }
+    .hero-summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 34px; }
+    .hero-summary-item { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; padding: 14px 0; border-top: 1px solid rgba(255,255,255,.2); }
+    .hero-summary-item b { color: #e58a7f; font-size: 13px; }
+    .section { padding: 76px 0; border-top: 1px solid var(--line); }
+    .section.compact { padding: 58px 0; }
+    .section-heading { width: 100%; max-width: none; min-width: 0; margin-bottom: 32px; }
+    .section-heading h2, .section-heading > p:last-child { width: 100%; max-width: none; min-width: 0; }
+    .section-heading h2 { margin-bottom: 12px; font-size: clamp(28px, 3.5vw, 43px); line-height: 1.18; }
+    .section-heading p { margin-bottom: 0; color: var(--ink-soft); font-size: 16px; }
+    .section-label { margin-bottom: 9px; color: var(--red); font-size: 12px; font-weight: 800; }
+    .metric-band { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); background: var(--white); }
+    .metric { min-width: 0; padding: 22px; border-left: 1px solid var(--line); }
+    .metric:first-child { border-left: 0; }
+    .metric span { color: var(--muted); font-size: 12px; font-weight: 800; }
+    .metric strong { display: block; margin: 8px 0; color: var(--red); font-size: 34px; line-height: 1; }
+    .metric p { margin-bottom: 0; color: var(--ink-soft); font-size: 13px; }
+    .gallery-head { display: flex; min-width: 0; align-items: end; justify-content: space-between; gap: 20px; margin: 34px 0 14px; }
+    .gallery-head h3, .gallery-head p { margin-bottom: 0; }
+    .gallery-head p { color: var(--muted); font-size: 13px; }
+    .gallery-controls { display: flex; flex: 0 0 auto; gap: 8px; }
+    .gallery-controls button { width: 38px; height: 38px; border: 1px solid var(--line); background: var(--white); color: var(--ink); cursor: pointer; }
+    .report-gallery { display: flex; gap: 18px; min-width: 0; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: thin; }
+    .report-card { flex: 0 0 min(76vw, 560px); min-width: 0; scroll-snap-align: start; border: 1px solid var(--line); background: var(--white); }
+    .report-card button { display: block; width: 100%; padding: 0; border: 0; background: var(--paper-deep); cursor: zoom-in; }
+    .report-card img { display: block; width: 100%; height: 290px; object-fit: cover; object-position: top; }
+    .report-card-copy { padding: 20px; }
+    .report-card-copy h3 { margin-bottom: 7px; font-size: 20px; }
+    .report-card-copy p { margin-bottom: 0; color: var(--ink-soft); font-size: 14px; }
+    .scope-ladder { border-top: 1px solid var(--ink); }
+    .scope-level { display: grid; grid-template-columns: minmax(220px, .75fr) minmax(0, 1.25fr); border-bottom: 1px solid var(--line); }
+    .scope-level h3, .scope-level > div { min-width: 0; margin: 0; padding: 22px; }
+    .scope-level > div { border-left: 1px solid var(--line); }
+    .scope-level p { margin: 6px 0 0; color: var(--ink-soft); }
+    .status { color: var(--red); font-size: 12px; font-weight: 800; }
+    .finding-list, .route-list { border-top: 1px solid var(--ink); }
+    .finding { display: grid; grid-template-columns: 46px minmax(220px, .72fr) minmax(0, 1.28fr); gap: 22px; min-width: 0; padding: 32px 0; border-bottom: 1px solid var(--line); }
+    .finding-index { color: var(--red); font-size: 13px; font-weight: 800; }
+    .finding h3 { margin-bottom: 0; font-size: 22px; }
+    .finding-copy { min-width: 0; }
+    .finding-copy p { color: var(--ink-soft); }
+    .mechanism-evidence { display: grid; grid-template-columns: minmax(220px, .9fr) minmax(0, 1.1fr); gap: 18px; min-width: 0; padding: 16px; border: 1px solid var(--line); background: var(--white); }
+    .evidence-button { display: block; width: 100%; padding: 0; border: 0; background: var(--paper-deep); cursor: zoom-in; }
+    .evidence-button img { display: block; width: 100%; height: 300px; object-fit: contain; }
+    .evidence-copy { min-width: 0; align-self: center; }
+    .evidence-copy p { margin-bottom: 10px; color: var(--ink-soft); font-size: 14px; }
+    .evidence-source { color: var(--muted) !important; font-size: 12px !important; }
+    .formula { margin-top: 30px; padding: 26px; border-left: 5px solid var(--green); background: var(--green-soft); font-weight: 800; }
+    .formula-label { display: block; margin-bottom: 7px; color: var(--green); font-size: 22px; }
+    .formula-expression { display: block; min-width: 0; font-size: clamp(15px, 1.45vw, 19px); overflow-wrap: anywhere; }
+    .route { display: grid; grid-template-columns: minmax(220px, .65fr) minmax(0, 1.35fr); gap: 34px; min-width: 0; padding: 32px 0; border-bottom: 1px solid var(--line); }
+    .route h3 { margin: 7px 0; font-size: 24px; }
+    .route-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 26px; min-width: 0; }
+    .route-field p { margin-bottom: 0; color: var(--ink-soft); font-size: 14px; }
+    .route-field strong { color: var(--green); font-size: 12px; }
+    .route-proof { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(260px, .9fr) minmax(0, 1.1fr); gap: 20px; min-width: 0; padding: 16px; border: 1px solid var(--line); background: var(--white); }
+    .route-proof img { display: block; width: 100%; height: 290px; object-fit: contain; }
+    .media-compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid var(--line); background: var(--white); }
+    .media-column { min-width: 0; padding: 28px; }
+    .media-column + .media-column { border-left: 1px solid var(--line); }
+    .media-column h3 { margin-bottom: 15px; font-size: 24px; }
+    .media-column p { margin-bottom: 0; color: var(--ink-soft); }
+    .subject-grid { border-top: 1px solid var(--ink); }
+    .subject { display: grid; grid-template-columns: minmax(190px, .4fr) minmax(0, 1.6fr); gap: 30px; min-width: 0; padding: 28px 0; border-bottom: 1px solid var(--line); }
+    .subject h3 { margin-bottom: 0; font-size: 25px; }
+    .subject-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); min-width: 0; }
+    .subject-field { min-width: 0; padding: 0 22px; border-left: 1px solid var(--line); }
+    .subject-field:first-child { padding-left: 0; border-left: 0; }
+    .subject-field p { margin-bottom: 0; color: var(--ink-soft); font-size: 14px; }
+    .subject-field strong { color: var(--muted); font-size: 12px; }
+    .diagnostic-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--ink); }
+    .diagnostic { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 14px; min-width: 0; padding: 26px 28px 26px 0; border-bottom: 1px solid var(--line); }
+    .diagnostic:nth-child(odd) { border-right: 1px solid var(--line); }
+    .diagnostic:nth-child(even) { padding-left: 28px; }
+    .diagnostic b { color: var(--red); font-size: 12px; }
+    .diagnostic h3 { margin-bottom: 6px; font-size: 19px; }
+    .diagnostic p { margin-bottom: 0; color: var(--ink-soft); font-size: 14px; }
+    footer { padding: 24px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    dialog { width: min(94vw, 1180px); max-height: 92vh; padding: 12px; border: 0; background: #101512; }
+    dialog::backdrop { background: rgba(0,0,0,.76); }
+    dialog img { display: block; max-width: 100%; max-height: 84vh; margin: 0 auto; object-fit: contain; }
+    .close { display: block; margin: 0 0 10px auto; border: 1px solid rgba(255,255,255,.45); background: transparent; color: #fff; cursor: pointer; }
+    @media (max-width: 920px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-copy { padding-right: 0; }
+      .audit-meta { padding-left: 0; border-top-width: 1px; border-left: 0; }
+      .metric-band { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .metric:nth-child(3) { border-left: 0; border-top: 1px solid var(--line); }
+      .metric:nth-child(4) { border-top: 1px solid var(--line); }
+      .finding { grid-template-columns: 42px minmax(190px, .65fr) minmax(0, 1.35fr); }
+      .route, .subject { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 680px) {
+      .wrap { width: min(calc(100% - 28px), 1280px); }
+      .topbar-inner { align-items: flex-start; flex-direction: column; gap: 6px; padding: 10px 0; }
+      .topnav { width: 100%; }
+      .hero { padding-top: 32px; }
+      .hero-copy { padding: 22px 0; }
+      h1 { font-size: 34px; }
+      .hero-lead { font-size: 16px; }
+      .hero-summary-grid, .metric-band, .media-compare, .diagnostic-grid { grid-template-columns: 1fr; }
+      .metric, .metric:first-child { border-top: 1px solid var(--line); border-left: 0; }
+      .metric:first-child { border-top: 0; }
+      .section { padding: 54px 0; }
+      .section-heading h2 { font-size: 30px; }
+      .report-card { flex-basis: min(88vw, 520px); }
+      .report-card img { height: 240px; }
+      .scope-level { grid-template-columns: 1fr; }
+      .scope-level h3, .scope-level > div { padding: 18px 0; border-left: 0; }
+      .finding { grid-template-columns: 36px minmax(0, 1fr); gap: 12px; }
+      .finding-copy { grid-column: 2; }
+      .mechanism-evidence { grid-column: 1 / -1; grid-template-columns: 1fr; padding: 12px; }
+      .evidence-button img { height: min(105vw, 400px); }
+      .formula { padding: 20px; }
+      .formula-expression { white-space: normal; }
+      .route-fields, .route-proof, .subject-fields { grid-template-columns: 1fr; }
+      .media-column + .media-column { border-top: 1px solid var(--line); border-left: 0; }
+      .subject-field, .subject-field:first-child { padding: 15px 0; border-top: 1px solid var(--line); border-left: 0; }
+      .subject-field:first-child { border-top: 0; }
+      .diagnostic, .diagnostic:nth-child(odd), .diagnostic:nth-child(even) { padding: 22px 0; border-right: 0; }
+    }
+    @media print {
+      .topbar, dialog, .gallery-controls { display: none; }
+      body { background: #fff; }
+      .section { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body data-report-template="xhs-cross-report-synthesis">
+  <header class="topbar" data-report-part="navigation">
+    <div class="wrap topbar-inner">
+      <div class="brand">{{SHORT_REPORT_NAME}}</div>
+      <nav class="topnav">
+        <a href="#scope">研究范围</a><a href="#applicability">适用层级</a><a href="#mechanisms">内容机制</a><a href="#routes">内容路线</a><a href="#diagnosis">内容诊断</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+      <section class="hero" data-report-part="synthesis-hero">
+        <div class="hero-copy"><p class="report-kicker">{{REPORT_KICKER}}</p><h1>{{REPORT_TITLE}}</h1><p class="hero-lead">{{REPORT_LEAD}}</p></div>
+        <dl class="audit-meta" data-report-part="synthesis-meta">{{SYNTHESIS_META_ROWS}}</dl>
+        <div class="hero-conclusion" data-report-part="executive-summary"><h2>核心结论</h2><p>{{CORE_CONCLUSION}}</p><div class="hero-summary-grid">{{CORE_FINDING_ITEMS}}</div></div>
+      </section>
+    </div>
+    <section class="section compact" id="scope" data-section="scope"><div class="wrap"><div class="section-heading"><h2>研究范围</h2><p>{{SCOPE_LEAD}}</p></div><div class="metric-band">{{SCOPE_METRICS}}</div><div class="gallery-head"><div><h3>来源报告</h3><p>{{REPORT_GALLERY_LEAD}}</p></div><div class="gallery-controls"><button type="button" data-gallery-prev aria-label="上一份报告">‹</button><button type="button" data-gallery-next aria-label="下一份报告">›</button></div></div><div class="report-gallery" data-report-part="report-gallery">{{REPORT_CARDS}}</div></div></section>
+    <section class="section" id="applicability" data-section="applicability"><div class="wrap"><div class="section-heading"><p class="section-label">适用层级</p><h2>{{APPLICABILITY_TITLE}}</h2><p>{{APPLICABILITY_LEAD}}</p></div><div class="scope-ladder">{{APPLICABILITY_LEVELS}}</div></div></section>
+    <section class="section" id="mechanisms" data-section="mechanisms"><div class="wrap"><div class="section-heading"><p class="section-label">跨报告共性</p><h2>{{MECHANISMS_TITLE}}</h2><p>{{MECHANISMS_LEAD}}</p></div><div class="finding-list">{{MECHANISM_ITEMS}}</div><div class="formula"><span class="formula-label">{{FORMULA_LABEL}}</span><span class="formula-expression">{{FORMULA_EXPRESSION}}</span></div></div></section>
+    <section class="section" id="routes" data-section="routes"><div class="wrap"><div class="section-heading"><p class="section-label">路线综合</p><h2>{{ROUTES_TITLE}}</h2><p>{{ROUTES_LEAD}}</p></div><div class="route-list">{{ROUTE_ITEMS}}</div></div></section>
+    <section class="section compact" id="media" data-section="media"><div class="wrap"><div class="section-heading"><p class="section-label">媒体分工</p><h2>{{MEDIA_TITLE}}</h2><p>{{MEDIA_LEAD}}</p></div><div class="media-compare">{{MEDIA_COLUMNS}}</div></div></section>
+    <section class="section" id="subjects" data-section="subjects"><div class="wrap"><div class="section-heading"><p class="section-label">对象差异</p><h2>{{SUBJECTS_TITLE}}</h2><p>{{SUBJECTS_LEAD}}</p></div><div class="subject-grid">{{SUBJECT_ITEMS}}</div></div></section>
+    <section class="section compact" id="diagnosis" data-section="diagnosis"><div class="wrap"><div class="section-heading"><p class="section-label">内容诊断</p><h2>{{DIAGNOSIS_TITLE}}</h2><p>{{DIAGNOSIS_LEAD}}</p></div><div class="diagnostic-grid">{{DIAGNOSTIC_ITEMS}}</div></div></section>
+  </main>
+  <footer><div class="wrap">{{FOOTER_TEXT}}</div></footer>
+  <dialog data-report-part="lightbox"><button class="close" type="button" aria-label="关闭">关闭</button><img alt="放大证据图"></dialog>
+  <script>
+    const gallery = document.querySelector('.report-gallery');
+    document.querySelector('[data-gallery-prev]')?.addEventListener('click', () => gallery.scrollBy({ left: -gallery.clientWidth * .82, behavior: 'smooth' }));
+    document.querySelector('[data-gallery-next]')?.addEventListener('click', () => gallery.scrollBy({ left: gallery.clientWidth * .82, behavior: 'smooth' }));
+    const lightbox = document.querySelector('dialog[data-report-part="lightbox"]');
+    const lightboxImage = lightbox.querySelector('img');
+    document.addEventListener('click', event => {
+      const button = event.target.closest('[data-zoom-src]');
+      if (!button) return;
+      lightboxImage.src = button.dataset.zoomSrc;
+      lightboxImage.alt = button.querySelector('img')?.alt || '放大证据图';
+      lightbox.showModal();
+    });
+    lightbox.querySelector('.close').addEventListener('click', () => lightbox.close());
+    lightbox.addEventListener('click', event => { if (event.target === lightbox) lightbox.close(); });
+  </script>
+</body>
+</html>

@@ -11,7 +11,7 @@ Open Creator 是一个面向内容创作者的开源 AI Skills 工具库，提�
 | Skill | 用途 |
 | --- | --- |
 | [`mental-model-info-cards`](skills/mental-model-info-cards/) | 创建、导出和审查六张式思维模型与概念知识信息卡 |
-| [`xhs-viral-content-analysis`](skills/xhs-viral-content-analysis/) | 解析小红书图文或视频内容，交付证据化 HTML 报告和结构化 JSON |
+| [`xhs-viral-content-analysis`](skills/xhs-viral-content-analysis/) | 解析小红书图文或视频内容，或综合多份既有分析报告，交付证据化 HTML 与结构化 JSON |
 
 后续 Skill 会继续放在 `skills/<skill-name>/` 下，而不是创建新的独立仓库。
 
@@ -96,7 +96,7 @@ $mental-model-info-cards 为“机会成本”制作、校验并导出一组六�
 
 ## XHS Viral Content Analysis
 
-XHS Viral Content Analysis 用于解析一批小红书图文或视频笔记，识别信息任务、主要载体、内容路线、说服结构、价值转译和风险边界。它输出可独立审阅的单文件 HTML 报告与结构化 JSON，不直接生成或发布新内容。
+XHS Viral Content Analysis 包含两种独立工作流：解析一批小红书图文或视频笔记；综合多份已经完成的分析报告。前者识别信息任务、主要载体、内容路线、说服结构、价值转译和风险边界，后者提炼跨报告共性机制、路线、媒体与研究对象差异及适用边界。两种工作流都输出可独立审阅的单文件 HTML 与结构化 JSON，不直接生成或发布新内容。
 
 - [使用说明](docs/xhs-viral-content-analysis/README-使用说明.md)
 - [Skill 本体](skills/xhs-viral-content-analysis/)
@@ -111,6 +111,10 @@ $xhs-viral-content-analysis 分析这批小红书图文内容，输出带原帖�
 $xhs-viral-content-analysis 分析这批小红书视频，重点拆解前 5 秒、画面文字、口播、声画关系和观众决策链。
 ```
 
+```text
+$xhs-viral-content-analysis 综合这几份已经完成的小红书内容分析报告，提炼反复出现的内容机制、内容路线、媒体与产品差异，并生成综合 HTML 报告和结构化 JSON。
+```
+
 ## 验证
 
 ```bash
@@ -118,7 +122,7 @@ python3 -m pip install -r requirements-dev.txt
 python3 scripts/validate_repo.py
 ```
 
-验证会扫描所有 `skills/*/SKILL.md`，检查 Skill 元数据、目录命名、插件清单、仓库链接、本机绝对路径、TODO 占位符和 Finder 缓存。GitHub Actions 还会运行 `xhs-viral-content-analysis` 自带的 HTML 与 JSON 校验器测试。
+验证会扫描所有 `skills/*/SKILL.md`，检查 Skill 元数据、目录命名、插件清单、仓库链接、本机绝对路径、TODO 占位符和 Finder 缓存。GitHub Actions 还会运行 `xhs-viral-content-analysis` 的单批解析与跨报告综合 HTML/JSON 校验器测试。
 
 ## 发布
 

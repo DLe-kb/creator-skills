@@ -1,17 +1,33 @@
 ---
 name: xhs-viral-content-analysis
-description: "独立解析一批小红书优质或高表现图文、视频笔记，识别有证据支持的信息任务、主要载体、决策链、内容路线、价值转译与风险边界，并输出单文件 HTML 报告和结构化 JSON 结果包。适用于小红书内容审计、跨样本规律提炼，也可按需为独立内容生产流程提供上游依据；不直接生成或发布新内容。"
+description: "解析小红书优质或高表现图文、视频笔记，或综合多份已完成的分析报告，识别有证据支持的信息任务、内容机制、路线、媒体与研究对象差异及风险边界，并输出可审阅的单文件 HTML 与结构化 JSON。适用于单批内容审计和跨报告共性提炼；不直接生成或发布新内容。"
 ---
 
 # 小红书爆款解析
 
 ## 当前能力
 
-当前支持小红书图文笔记和视频笔记。将“爆款”视为研究目标或样本标签，不将共同特征解释为流量、互动、转化或爆款因果。
+当前包含两个独立工作流：
+
+- **单批内容解析**：输入原始图文或视频笔记，在一个可比较批次内完成逐篇拆解与跨样本归纳。
+- **跨报告综合**：输入多份已经完成的分析报告或结果包，提炼跨产品、跨研究对象或跨媒体仍然成立的共性机制、开放路线、差异与适用边界。
+
+将“爆款”视为研究目标或样本标签，不将共同特征解释为流量、互动、转化或爆款因果。
 
 本 Skill 负责解析，不负责生成新笔记、发布内容或替用户确认产品主张。解析报告本身就是完整交付，不以启动复刻、生成下游交接或被其他 Skill 消费为完成条件。若用户随后要求创作，独立的内容生产流程可以按需消费其中有复用价值且证据条件充分的部分。
 
-## 输入要求
+## 工作流路由
+
+根据用户的任务意图选择工作流，不按文件数量自动升级任务。
+
+- 用户要求分析一条或一批原始笔记、拆解图文或视频、识别单批路线时，使用**单批内容解析**。
+- 用户明确要求从多份既有报告中总结共性、比较差异、提炼综合框架或生成综合报告时，使用**跨报告综合**。自然语言表达即视为人工触发，不要求固定命令。
+- 用户只是提供多份报告，但没有提出跨报告归纳目标时，不擅自开始综合；可以说明该能力可用，并继续完成用户已经明确的任务。
+- 同时存在原始笔记和既有报告时，先判断用户要补做单批解析，还是要综合已有结果。缺少会改变任务范围的关键信息时再请求确认。
+
+跨报告综合至少需要 2 份能够回溯范围与证据的分析报告。报告只有 HTML、缺少结构化结果时可以降级综合，但必须记录字段缺口；报告之间缺乏共同研究问题或可比维度时，不以数量代替可比性。
+
+## 单批输入要求
 
 尽量收集每条笔记的完整成品证据：
 
@@ -25,7 +41,7 @@ description: "独立解析一批小红书优质或高表现图文、视频笔记
 
 图文与视频不得混入同一个媒体结构统计。混合输入应拆成 `image_post` 和 `video_post` 两个批次分别分析。
 
-## 执行流程
+## 单批执行流程
 
 1. 阅读 [共用解析核心](references/shared-analysis-core.md)，建立样本范围、证据台账和结论等级。
 2. 根据媒体类型只选择一份方法：图文阅读 [图文解析方法](references/image-post-analysis.md)，视频阅读 [视频解析方法](references/video-post-analysis.md)。逐篇拆解完整内容后，再进行跨样本路线分析。
@@ -35,6 +51,21 @@ description: "独立解析一批小红书优质或高表现图文、视频笔记
 6. 先阅读 [HTML 报告契约](references/html-report-contract.md) 和 [审计报告视觉系统](references/html-report-visual-system.md)，再按媒体类型复制 `assets/XHS-Image-Post-Audit-Template.html` 或 `assets/XHS-Video-Post-Audit-Template.html` 作为 `analysis-report.html` 的唯一实现起点。两种模板共用同一视觉系统、DOM 主骨架、核心 CSS 类名和响应式规则；只能替换报告内容、样本数量、路线数量和证据图片。核心结论必须使用标准的“结论文字矩阵 + 原帖证据带”组件，把结论与对应证据放在同一阅读位置；末尾逐篇证据区不能替代这种就地配对。除非用户明确要求新设计，不得另起平行组件、改名重写模板骨架，或改成另一套视觉主题。若报告先使用相对图片路径编写，可运行 `scripts/embed_html_images.py` 将图片内嵌到最终文件。
 7. 按 [解析结果契约](references/analysis-result-contract.md) 生成 `analysis-result.json`。它首先是独立分析的机器伴随文件，用于保存稳定字段和证据引用，不替代 HTML。仅当用户需要复刻，或当前结论确有明确复用价值时，才增加可选的复刻蓝图与下游交接字段。
 8. 分别运行 `scripts/validate_html_report.py` 和 `scripts/validate_analysis_result.py`。修复结构、引用或可移植性错误后再交付。
+
+## 跨报告综合流程
+
+仅在路由到跨报告综合时，阅读以下文件：
+
+1. [跨报告综合方法](references/cross-report-synthesis.md)：输入条件、共性矩阵、路线聚类、差异分析与结论降级规则。
+2. [综合结果契约](references/synthesis-result-contract.md)：`synthesis-result.json` 的字段、引用关系和证据等级。
+3. [综合 HTML 契约](references/synthesis-html-contract.md)：正式报告的内容边界、固定章节、响应式与文案要求。
+
+复制 `assets/XHS-Cross-Report-Synthesis-Template.html` 作为综合 HTML 的唯一实现起点，替换全部占位内容后输出 `synthesis-report.html`。同时按 `references/synthesis-result.schema.json` 生成 `synthesis-result.json`，并运行：
+
+```bash
+python3 scripts/validate_synthesis_html.py output/synthesis-report.html
+python3 scripts/validate_synthesis_result.py output/synthesis-result.json
+```
 
 ## 完成条件
 
@@ -48,6 +79,14 @@ description: "独立解析一批小红书优质或高表现图文、视频笔记
 - HTML 带有对应媒体模板标记、审计元信息、首屏核心结论、证据画廊和图片放大交互；视觉层级与 [审计报告视觉系统](references/html-report-visual-system.md) 一致。
 - HTML 保留标准模板的 `.section`、`.section-heading`、`.finding-grid`、`.finding-copy`、`.finding-points`、`.evidence-stack`、`figure.evidence`、`.route-list`、`.case-list`、`.case-header`、`.case-metrics`、`.case-layout`、`.full-shot`、`.case-analysis`、`details.gallery` 与 `.limit-grid`；不得用自创的同义组件替换。
 - 核心分析不是连续纯文字：至少建立 4 个带 `data-evidence-group` 的标准结论证据组。每组按“结论标题与说明 → 2 至 4 项分析要点 → 原帖证据带”排列，并用封面、完整页面、关键配图或视频关键帧就地支持结论。
+
+跨报告综合另需满足：
+
+- 每条“反复出现”的共性可以回溯到至少 2 份来源报告，不能用同一报告内的重复代替跨报告重复。
+- 跨媒体结论先保留图文与视频各自结构，再抽象共同的信息任务和决策机制。
+- 代表截图用于帮助理解；跨报告来源映射用于证明共性，二者不能互相替代。
+- 综合 HTML 只呈现正式研究内容，不出现内部沟通、制作说明、版本、Gate、Skill、脚本或校验过程。
+- 标题、章节说明、长句和长标识在桌面与手机宽度都能自适应，不以固定窄列或强制单行造成大面积空白、溢出或不自然断行。
 
 ## 停止或降级
 

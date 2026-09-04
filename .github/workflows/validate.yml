@@ -26,3 +26,5 @@ jobs:
         run: |
           python skills/xhs-viral-content-analysis/scripts/test_validate_analysis_result.py
           python skills/xhs-viral-content-analysis/scripts/test_validate_html_report.py
+          python skills/xhs-viral-content-analysis/scripts/test_validate_synthesis_result.py
+          python skills/xhs-viral-content-analysis/scripts/test_validate_synthesis_html.py
