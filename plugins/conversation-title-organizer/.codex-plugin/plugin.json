@@ -1,0 +1,35 @@
+{
+  "name": "conversation-title-organizer",
+  "version": "0.1.0",
+  "description": "Automatically normalizes Codex conversation titles with a local-first classifier and an optional AI fallback.",
+  "author": {
+    "name": "DLe-kb",
+    "url": "https://github.com/DLe-kb"
+  },
+  "homepage": "https://github.com/DLe-kb/open-creator/tree/main/docs/conversation-title-organizer",
+  "repository": "https://github.com/DLe-kb/open-creator",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "conversation-title",
+    "productivity",
+    "hooks",
+    "privacy"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Conversation Title Organizer",
+    "shortDescription": "自动把 Codex 会话标题整理为日期、类型和主题。",
+    "longDescription": "使用本机优先、AI 可选兜底的方式，将 Codex 主会话标题规范为 MMDD｜类型｜主题；分类固定、默认零凭证、不会读取 Cookie。",
+    "developerName": "DLe-kb",
+    "category": "Productivity",
+    "capabilities": [
+      "Automation",
+      "Local"
+    ],
+    "defaultPrompt": [
+      "检查 Conversation Title Organizer 的运行状态。",
+      "说明如何自定义会话标题类型。"
+    ]
+  }
+}

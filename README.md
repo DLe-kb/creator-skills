@@ -13,9 +13,26 @@ Open Creator 是一个面向内容创作者的开源 AI Skills 工具库，提�
 | [`mental-model-info-cards`](skills/mental-model-info-cards/) | 创建、导出和审查六张式思维模型与概念知识信息卡 |
 | [`xhs-viral-content-analysis`](skills/xhs-viral-content-analysis/) | 解析小红书图文或视频内容，或综合多份既有分析报告，交付证据化 HTML 与结构化 JSON |
 
+## Plugins
+
+| Plugin | 用途 |
+| --- | --- |
+| [`conversation-title-organizer`](plugins/conversation-title-organizer/) | 自动将 Codex 主会话标题规范为 `MMDD｜类型｜主题`，本机优先分类并提供可选 AI 兜底 |
+
+该插件独立安装，不会因为安装其他 Open Creator Skills 而自动启用。安装与安全说明见 [Conversation Title Organizer 使用说明](docs/conversation-title-organizer/README-使用说明.md)。
+
 后续 Skill 会继续放在 `skills/<skill-name>/` 下，而不是创建新的独立仓库。
 
 ## 安装
+
+### 安装 Conversation Title Organizer Plugin
+
+```bash
+codex plugin marketplace add DLe-kb/open-creator --ref main
+codex plugin add conversation-title-organizer@open-creator
+```
+
+安装后在 Codex Desktop 新建主会话即可使用。插件不读取 Cookie 或现有 Codex provider 凭证；可选 AI 兜底需要用户自行提供插件专用 API Key。
 
 ### 使用 Skill Installer
 
@@ -57,13 +74,17 @@ cp -R skills/mental-model-info-cards /path/to/your-repo/.agents/skills/mental-mo
 
 ```text
 open-creator/
+├── .agents/plugins/marketplace.json
 ├── .codex-plugin/plugin.json
 ├── .github/workflows/validate.yml
 ├── docs/
+│   ├── conversation-title-organizer/
 │   ├── mental-model-info-cards/
 │   └── xhs-viral-content-analysis/
 ├── examples/
 │   └── mental-model-info-cards/
+├── plugins/
+│   └── conversation-title-organizer/
 ├── scripts/validate_repo.py
 ├── skills/
 │   ├── mental-model-info-cards/

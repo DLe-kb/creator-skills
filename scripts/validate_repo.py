@@ -12,6 +12,8 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS_DIR = ROOT / "skills"
 PLUGIN_FILE = ROOT / ".codex-plugin" / "plugin.json"
+TITLE_PLUGIN_DIR = ROOT / "plugins" / "conversation-title-organizer"
+MARKETPLACE_FILE = ROOT / ".agents" / "plugins" / "marketplace.json"
 SKILL_NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -128,6 +130,41 @@ def validate_plugin() -> None:
         fail("plugin.json repository URL is incorrect")
 
 
+def validate_conversation_title_plugin() -> None:
+    required = {
+        ".codex-plugin/plugin.json",
+        "hooks.json",
+        "config/default-config.json",
+        "scripts/normalize_conversation_title.py",
+        "scripts/test_normalize_conversation_title.py",
+        "skills/conversation-title-organizer/SKILL.md",
+        "skills/conversation-title-organizer/agents/openai.yaml",
+    }
+    missing = sorted(path for path in required if not (TITLE_PLUGIN_DIR / path).is_file())
+    if missing:
+        fail(f"Missing conversation-title-organizer files: {', '.join(missing)}")
+
+    manifest_path = TITLE_PLUGIN_DIR / ".codex-plugin" / "plugin.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("name") != "conversation-title-organizer":
+        fail("conversation-title-organizer manifest name is incorrect")
+    if manifest.get("skills") != "./skills/":
+        fail("conversation-title-organizer skills path is incorrect")
+
+    hooks = json.loads((TITLE_PLUGIN_DIR / "hooks.json").read_text(encoding="utf-8"))
+    if not hooks.get("hooks", {}).get("Stop"):
+        fail("conversation-title-organizer Stop hook is missing")
+
+    marketplace = json.loads(MARKETPLACE_FILE.read_text(encoding="utf-8"))
+    if marketplace.get("name") != "open-creator":
+        fail("marketplace name must be open-creator")
+    entries = {item.get("name"): item for item in marketplace.get("plugins", [])}
+    entry = entries.get("conversation-title-organizer")
+    expected_path = "./plugins/conversation-title-organizer"
+    if not entry or entry.get("source", {}).get("path") != expected_path:
+        fail("conversation-title-organizer marketplace entry is missing or incorrect")
+
+
 def validate_repository_hygiene() -> None:
     forbidden_text = ("/" + "Users/", "[" + "TODO:")
     for path in ROOT.rglob("*"):
@@ -151,6 +188,7 @@ def main() -> None:
     validate_mental_model_info_cards()
     validate_xhs_viral_content_analysis()
     validate_plugin()
+    validate_conversation_title_plugin()
     validate_repository_hygiene()
     print(f"Open Creator repository validation passed for {len(skill_files)} skill(s).")
 
