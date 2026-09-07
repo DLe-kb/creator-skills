@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ./scripts/normalize_conversation_title.py",
+            "command": "python3 \"$PLUGIN_ROOT/scripts/normalize_conversation_title.py\"",
             "timeout": 3
           }
         ]

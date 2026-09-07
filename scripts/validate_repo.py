@@ -133,7 +133,7 @@ def validate_plugin() -> None:
 def validate_conversation_title_plugin() -> None:
     required = {
         ".codex-plugin/plugin.json",
-        "hooks.json",
+        "hooks/hooks.json",
         "config/default-config.json",
         "scripts/normalize_conversation_title.py",
         "scripts/test_normalize_conversation_title.py",
@@ -151,9 +151,12 @@ def validate_conversation_title_plugin() -> None:
     if manifest.get("skills") != "./skills/":
         fail("conversation-title-organizer skills path is incorrect")
 
-    hooks = json.loads((TITLE_PLUGIN_DIR / "hooks.json").read_text(encoding="utf-8"))
+    hooks = json.loads((TITLE_PLUGIN_DIR / "hooks" / "hooks.json").read_text(encoding="utf-8"))
     if not hooks.get("hooks", {}).get("Stop"):
         fail("conversation-title-organizer Stop hook is missing")
+    command = hooks["hooks"]["Stop"][0]["hooks"][0].get("command", "")
+    if "$PLUGIN_ROOT/scripts/normalize_conversation_title.py" not in command:
+        fail("conversation-title-organizer hook must resolve the script through PLUGIN_ROOT")
 
     marketplace = json.loads(MARKETPLACE_FILE.read_text(encoding="utf-8"))
     if marketplace.get("name") != "creator-skills":
