@@ -1,0 +1,4 @@
+interface:
+  display_name: "Conversation Title Organizer"
+  short_description: "诊断和自定义 Codex 会话标题自动规范插件"
+  default_prompt: "使用 $conversation-title-organizer 检查自动会话标题是否正常运行。"

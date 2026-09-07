@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "date_format": "%m%d",
+  "max_theme_chars": 24,
+  "default_profile": "general",
+  "local_fast_path": {
+    "enabled": true,
+    "min_score": 4,
+    "min_margin": 2,
+    "max_request_chars": 240
+  },
+  "ai": {
+    "enabled": true,
+    "base_url": "https://api.openai.com/v1",
+    "model": "gpt-5-mini",
+    "max_input_chars": 240,
+    "max_output_tokens": 120,
+    "request_timeout_seconds": 30
+  },
+  "profiles": {
+    "general": {
+      "types": ["概念", "调研", "评估", "规划", "实践", "开发", "验证", "排障", "复盘", "治理", "沉淀"],
+      "rules": [
+        {"type": "排障", "prefixes": ["修复", "排查", "解决"], "keywords": ["故障", "报错", "错误", "异常", "失败", "无法", "不可用", "打不开", "没反应", "阻塞"]},
+        {"type": "验证", "prefixes": ["验证", "检查", "核对", "测试", "验收"], "keywords": ["一致性", "可用性", "兼容性", "是否正常"]},
+        {"type": "开发", "prefixes": ["开发", "实现", "编写", "新增"], "keywords": ["代码", "脚本", "API", "CLI", "功能"]},
+        {"type": "实践", "prefixes": ["安装", "配置", "创建", "搭建", "生成", "制作", "部署", "发布", "卸载"], "keywords": ["导入", "执行", "运行"]},
+        {"type": "调研", "prefixes": ["调研", "研究", "查找", "搜索"], "keywords": ["选型", "竞品", "资料搜集", "成熟方案"]},
+        {"type": "评估", "prefixes": ["评估", "判断", "比较"], "keywords": ["有没有必要", "影响", "风险", "可行性", "是否适合"]},
+        {"type": "规划", "prefixes": ["规划", "计划", "设计方案"], "keywords": ["路线图", "下一步", "实施方案"]},
+        {"type": "复盘", "prefixes": ["复盘", "回顾"], "keywords": ["收获", "表现分析", "效果分析", "经验教训"]},
+        {"type": "治理", "prefixes": ["整理", "规范", "清理", "盘点", "迁移"], "keywords": ["隐私", "归属", "目录", "项目结构", "会话标题", "命名规范"]},
+        {"type": "沉淀", "prefixes": ["沉淀", "记录", "编写文档", "更新文档"], "keywords": ["手册", "说明文档", "知识库", "长期保存"]},
+        {"type": "概念", "prefixes": ["解释", "了解"], "keywords": ["是什么", "区别", "作用", "原理", "如何理解"]}
+      ]
+    }
+  },
+  "projects": []
+}

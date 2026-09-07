@@ -1,0 +1,20 @@
+{
+  "name": "creator-skills",
+  "interface": {
+    "displayName": "Open Creator"
+  },
+  "plugins": [
+    {
+      "name": "conversation-title-organizer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/conversation-title-organizer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
