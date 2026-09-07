@@ -33,7 +33,9 @@ codex plugin marketplace add DLe-kb/creator-skills --ref main
 codex plugin add conversation-title-organizer@creator-skills
 ```
 
-安装后新建一个 Codex 主会话。第一次回答结束后，插件会在后台尝试规范标题。子 Agent、归档会话和已经符合格式的标题不会处理。
+安装后，在 Codex 中使用 `/hooks` 打开 Hook 管理，检查并信任 `Conversation Title Organizer` 的 Hook。Codex 不会自动信任新安装插件携带的 Hook；未完成这一步时，插件能显示为已安装，但自动命名不会运行。
+
+然后新建一个 Codex 主会话。第一次回答结束后，插件会在后台尝试规范标题。子 Agent、归档会话和已经符合格式的标题不会处理。
 
 ## 默认运行方式
 
