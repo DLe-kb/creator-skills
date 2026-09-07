@@ -126,7 +126,7 @@ def validate_plugin() -> None:
         fail("plugin.json skills path must be ./skills/")
     if data.get("license") != "MIT":
         fail("plugin.json license must be MIT")
-    if data.get("repository") != "https://github.com/DLe-kb/open-creator":
+    if data.get("repository") != "https://github.com/DLe-kb/creator-skills":
         fail("plugin.json repository URL is incorrect")
 
 
@@ -156,8 +156,8 @@ def validate_conversation_title_plugin() -> None:
         fail("conversation-title-organizer Stop hook is missing")
 
     marketplace = json.loads(MARKETPLACE_FILE.read_text(encoding="utf-8"))
-    if marketplace.get("name") != "open-creator":
-        fail("marketplace name must be open-creator")
+    if marketplace.get("name") != "creator-skills":
+        fail("marketplace name must be creator-skills")
     entries = {item.get("name"): item for item in marketplace.get("plugins", [])}
     entry = entries.get("conversation-title-organizer")
     expected_path = "./plugins/conversation-title-organizer"

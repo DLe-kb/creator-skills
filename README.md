@@ -28,8 +28,8 @@ Open Creator 是一个面向内容创作者的开源 AI Skills 工具库，提�
 ### 安装 Conversation Title Organizer Plugin
 
 ```bash
-codex plugin marketplace add DLe-kb/open-creator --ref main
-codex plugin add conversation-title-organizer@open-creator
+codex plugin marketplace add DLe-kb/creator-skills --ref main
+codex plugin add conversation-title-organizer@creator-skills
 ```
 
 安装后在 Codex Desktop 新建主会话即可使用。插件不读取 Cookie 或现有 Codex provider 凭证；可选 AI 兜底需要用户自行提供插件专用 API Key。
@@ -39,7 +39,7 @@ codex plugin add conversation-title-organizer@open-creator
 在 Codex 中调用 `$skill-installer`，要求从以下仓库安装目标 Skill：
 
 ```text
-https://github.com/DLe-kb/open-creator
+https://github.com/DLe-kb/creator-skills
 ```
 
 并指定 Skill 名称，例如 `mental-model-info-cards` 或 `xhs-viral-content-analysis`。
@@ -47,16 +47,16 @@ https://github.com/DLe-kb/open-creator
 ### 用户级手动安装
 
 ```bash
-git clone https://github.com/DLe-kb/open-creator.git ~/open-creator
+git clone https://github.com/DLe-kb/creator-skills.git ~/creator-skills
 mkdir -p ~/.agents/skills
-ln -s ~/open-creator/skills/mental-model-info-cards ~/.agents/skills/mental-model-info-cards
-ln -s ~/open-creator/skills/xhs-viral-content-analysis ~/.agents/skills/xhs-viral-content-analysis
+ln -s ~/creator-skills/skills/mental-model-info-cards ~/.agents/skills/mental-model-info-cards
+ln -s ~/creator-skills/skills/xhs-viral-content-analysis ~/.agents/skills/xhs-viral-content-analysis
 ```
 
 更新仓库：
 
 ```bash
-git -C ~/open-creator pull
+git -C ~/creator-skills pull
 ```
 
 ### 仓库级安装

@@ -24,13 +24,13 @@ MMDD｜类型｜主题
 添加 Open Creator marketplace（插件市场）：
 
 ```bash
-codex plugin marketplace add DLe-kb/open-creator --ref main
+codex plugin marketplace add DLe-kb/creator-skills --ref main
 ```
 
 安装插件：
 
 ```bash
-codex plugin add conversation-title-organizer@open-creator
+codex plugin add conversation-title-organizer@creator-skills
 ```
 
 安装后新建一个 Codex 主会话。第一次回答结束后，插件会在后台尝试规范标题。子 Agent、归档会话和已经符合格式的标题不会处理。
@@ -128,8 +128,8 @@ python3 scripts/normalize_conversation_title.py --doctor
 ## 更新与卸载
 
 ```bash
-codex plugin marketplace upgrade open-creator
-codex plugin add conversation-title-organizer@open-creator
+codex plugin marketplace upgrade creator-skills
+codex plugin add conversation-title-organizer@creator-skills
 ```
 
 卸载：
